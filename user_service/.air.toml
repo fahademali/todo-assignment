@@ -1,0 +1,13 @@
+# .air.toml
+
+[build]
+  # List the directories or files you want to watch for changes.
+  # This can include main.go, all Go files, and subdirectories.
+  include = ["*.go", "go.sum", "go.mod"]
+  
+  # Exclude directories or files that you want to skip watching.
+  exclude = [".git", "node_modules"]
+
+[run]
+  # The command to build and run your Go application.
+  cmd = "go run ."
