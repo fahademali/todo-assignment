@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"user_service/api/handlers"
+	"user_service/apis/handlers"
 )
 
 func AddUserRoutes(ur *gin.Engine) {
