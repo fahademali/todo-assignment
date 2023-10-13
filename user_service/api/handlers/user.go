@@ -60,13 +60,6 @@ func HandleSignup(ctx *gin.Context) {
 }
 
 func HandleRefreshToken(ctx *gin.Context) {
-	var requestBody loginRequestBody
-	// TODO: what does this shouldbingjson do when produce error
-	if err := ctx.ShouldBindJSON(&requestBody); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "/refresh-token Not Implemented yet",
 	})
