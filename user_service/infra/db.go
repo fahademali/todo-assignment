@@ -2,19 +2,13 @@ package infra
 
 import (
 	"database/sql"
-	"fmt"
+	"log"
 
 	_ "github.com/lib/pq"
 )
 
 func DbConnection() {
 	connectionStr := "user=user password=mypassword dbname=user sslmode=disable"
-	conn, err := sql.Open("postgres", connectionStr)
-
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(conn)
 	createTableSQL := `
 		CREATE TABLE IF NOT EXISTS users (
 			id SERIAL PRIMARY KEY,
@@ -23,16 +17,14 @@ func DbConnection() {
 			password VARCHAR(100)
 		)
 	`
-	rows, err := conn.Query("SELECT version();")
-	_, err2 := conn.Exec(createTableSQL)
 
-	if err2 != nil {
-		panic(err)
+	conn, err := sql.Open("postgres", connectionStr)
+	if err != nil {
+		log.Fatalf("Error connecting to the database: %v", err)
 	}
-	for rows.Next() {
-		var version string
-		rows.Scan(&version)
-		fmt.Println("version")
-		fmt.Println(version)
+
+	_, err2 := conn.Exec(createTableSQL)
+	if err2 != nil {
+		log.Fatalf("Error creating the 'users' table: %v", err2)
 	}
 }
