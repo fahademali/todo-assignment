@@ -2,12 +2,13 @@ package infra
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	_ "github.com/lib/pq"
 )
 
-func DbConnection() {
+func DbConnection() *sql.DB {
 	connectionStr := "user=user password=mypassword dbname=user sslmode=disable"
 	createTableSQL := `
 		CREATE TABLE IF NOT EXISTS users (
@@ -17,14 +18,17 @@ func DbConnection() {
 			password VARCHAR(100)
 		)
 	`
-
-	conn, err := sql.Open("postgres", connectionStr)
+	db, err := sql.Open("postgres", connectionStr)
 	if err != nil {
 		log.Fatalf("Error connecting to the database: %v", err)
 	}
+	fmt.Println("Database connection established!!!")
 
-	_, err2 := conn.Exec(createTableSQL)
+	_, err2 := db.Exec(createTableSQL)
 	if err2 != nil {
 		log.Fatalf("Error creating the 'users' table: %v", err2)
 	}
+	fmt.Println("Users table available")
+
+	return db
 }
