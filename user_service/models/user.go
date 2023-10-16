@@ -15,8 +15,10 @@ type SignupRequestBody struct {
 }
 
 type User struct {
-	Id       string
-	Email    string
-	Username string
-	Password string
+	Id         string
+	Email      string
+	Username   string
+	Password   string
+	IsVerified bool
+	Role       string
 }
