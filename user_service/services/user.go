@@ -12,8 +12,9 @@ import (
 )
 
 type IUserService interface {
-	Login(rb models.LoginRequestBody) string
-	Signup(rb models.SignupRequestBody) string
+	Login(rb models.LoginRequest) string
+	Signup(rb models.SignupRequest) (string, error)
+	VerifyUser() error
 }
 
 type UserService struct {
@@ -24,7 +25,7 @@ func NewUserService(userRepo repo.IUserRepo) IUserService {
 	return &UserService{userRepo: userRepo}
 }
 
-func (u *UserService) Login(rb models.LoginRequestBody) string {
+func (u *UserService) Login(rb models.LoginRequest) string {
 	user, err := u.userRepo.GetUserByEmail(rb.Email)
 	if err != nil {
 		return err.Error()
@@ -43,25 +44,35 @@ func (u *UserService) Login(rb models.LoginRequestBody) string {
 	return token
 }
 
-func (u *UserService) Signup(rb models.SignupRequestBody) string {
+func (u *UserService) Signup(rb models.SignupRequest) (string, error) {
 	_, err := u.userRepo.GetUserByEmail(rb.Email)
 	if err == nil {
-		message := fmt.Sprintf("Account is already linked with %v", rb.Email)
-		return message
+		errMessage := fmt.Errorf("account is already linked with %s", rb.Email)
+		return "", errMessage
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(rb.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return err.Error()
+		return "", err
 	}
 
 	rb.Password = string(hashedPassword)
-	_, err = u.userRepo.InsertUser(rb)
+
+	err = u.userRepo.InsertUser(rb)
 	if err != nil {
-		return err.Error()
+		return "", err
 	}
 
-	return "User has been created"
+	return "User has been created", nil
+}
+
+func (u *UserService) VerifyUser() error {
+	//TODO: remove hard code values
+	err := u.userRepo.VerifyUser("fahad@gmail.com")
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func comparePasswords(hashedPassword, password string) error {
@@ -73,7 +84,7 @@ func generateAccessToken(email string) (string, error) {
 		"email": email,
 		"nbf":   time.Now().Unix(),
 	})
-
+	//TODO: get the key from .env variables
 	tokenString, err := token.SignedString([]byte("mysecretkey"))
 	if err != nil {
 		return "", err

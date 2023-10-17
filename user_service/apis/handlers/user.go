@@ -15,6 +15,7 @@ type IUserHandlers interface {
 	HandleSignup(ctx *gin.Context)
 	HandleRefreshToken(ctx *gin.Context)
 	HandleForgetPassword(ctx *gin.Context)
+	HandleVerifyUser(ctx *gin.Context)
 }
 
 type UserHandlers struct {
@@ -26,7 +27,7 @@ func NewUserHandlers(userService services.IUserService) IUserHandlers {
 }
 
 func (uh *UserHandlers) HandleGetProfile(ctx *gin.Context) {
-	var requestBody models.ProfileRequestBody
+	var requestBody models.ProfileRequest
 
 	if err := ctx.ShouldBindJSON(&requestBody); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -38,7 +39,7 @@ func (uh *UserHandlers) HandleGetProfile(ctx *gin.Context) {
 }
 
 func (uh *UserHandlers) HandleLogin(ctx *gin.Context) {
-	var requestBody models.LoginRequestBody
+	var requestBody models.LoginRequest
 
 	if err := ctx.ShouldBindJSON(&requestBody); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -52,14 +53,18 @@ func (uh *UserHandlers) HandleLogin(ctx *gin.Context) {
 }
 
 func (uh *UserHandlers) HandleSignup(ctx *gin.Context) {
-	var requestBody models.SignupRequestBody
+	var requestBody models.SignupRequest
 
 	if err := ctx.ShouldBindJSON(&requestBody); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	message := uh.userService.Signup(requestBody)
+	message, err := uh.userService.Signup(requestBody)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": message,
@@ -73,6 +78,13 @@ func (uh *UserHandlers) HandleRefreshToken(ctx *gin.Context) {
 }
 
 func (uh *UserHandlers) HandleForgetPassword(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "Oh not again! Weak Memory",
+	})
+}
+
+func (uh *UserHandlers) HandleVerifyUser(ctx *gin.Context) {
+
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "Oh not again! Weak Memory",
 	})

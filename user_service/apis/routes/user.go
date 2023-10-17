@@ -24,4 +24,6 @@ func AddUserRoutes(ur *gin.Engine, handlers handlers.IUserHandlers) {
 	ur.POST("/refresh-token", handlers.HandleRefreshToken)
 
 	ur.POST("/forget-password", handlers.HandleForgetPassword)
+
+	ur.POST("/verify-user", handlers.HandleVerifyUser)
 }
