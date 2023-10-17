@@ -12,8 +12,8 @@ import (
 )
 
 type IUserService interface {
-	Login(rb models.LoginRequest) string
-	Signup(rb models.SignupRequest) (string, error)
+	Login(rb models.LoginRequest) (string, error)
+	Signup(rb models.SignupRequest) error
 	VerifyUser() error
 }
 
@@ -25,45 +25,45 @@ func NewUserService(userRepo repo.IUserRepo) IUserService {
 	return &UserService{userRepo: userRepo}
 }
 
-func (u *UserService) Login(rb models.LoginRequest) string {
+func (u *UserService) Login(rb models.LoginRequest) (string, error) {
 	user, err := u.userRepo.GetUserByEmail(rb.Email)
 	if err != nil {
-		return err.Error()
+		return "", err
 	}
 
 	err = comparePasswords(user.Password, rb.Password)
 	if err != nil {
-		return err.Error()
+		return "", err
 	}
 
 	token, err := generateAccessToken(rb.Email)
 	if err != nil {
-		return err.Error()
+		return "", err
 	}
 
-	return token
+	return token, nil
 }
 
-func (u *UserService) Signup(rb models.SignupRequest) (string, error) {
+func (u *UserService) Signup(rb models.SignupRequest) error {
 	_, err := u.userRepo.GetUserByEmail(rb.Email)
 	if err == nil {
 		errMessage := fmt.Errorf("account is already linked with %s", rb.Email)
-		return "", errMessage
+		return errMessage
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(rb.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	rb.Password = string(hashedPassword)
 
 	err = u.userRepo.InsertUser(rb)
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	return "User has been created", nil
+	return nil
 }
 
 func (u *UserService) VerifyUser() error {

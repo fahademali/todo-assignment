@@ -45,8 +45,11 @@ func (uh *UserHandlers) HandleLogin(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	message := uh.userService.Login(requestBody)
-
+	message, err := uh.userService.Login(requestBody)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": message,
 	})
@@ -60,14 +63,14 @@ func (uh *UserHandlers) HandleSignup(ctx *gin.Context) {
 		return
 	}
 
-	message, err := uh.userService.Signup(requestBody)
+	err := uh.userService.Signup(requestBody)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
-		"message": message,
+		"message": "User has been created",
 	})
 }
 

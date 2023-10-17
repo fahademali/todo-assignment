@@ -26,7 +26,7 @@ func (ur *UserRepo) GetUserByEmail(email string) (models.User, error) {
 	var user models.User
 	row := ur.db.QueryRow("Select * From users WHERE email = $1", email)
 
-	if err := row.Scan(&user.Id, &user.Username, &user.Email, &user.Password, &user.Role, &user.IsVerified); err != nil {
+	if err := row.Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.Role, &user.IsVerified); err != nil {
 		if err == sql.ErrNoRows {
 			return user, fmt.Errorf("email %s is not linked to any user", email)
 		}
