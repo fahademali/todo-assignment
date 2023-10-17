@@ -17,10 +17,16 @@ func main() {
 
 	var userRepo repo.IUserRepo
 	var userService services.IUserService
+	var tokenService services.ITokenService
+	var cryptService services.ICryptService
 	var userHandlers handlers.IUserHandlers
 
 	userRepo = repo.NewUserRepo(db)
-	userService = services.NewUserService(userRepo)
+
+	cryptService = services.NewCryptService()
+	tokenService = services.NewTokenService()
+	userService = services.NewUserService(userRepo, cryptService, tokenService)
+
 	userHandlers = handlers.NewUserHandlers(userService)
 
 	routes.AddUserRoutes(r, userHandlers)

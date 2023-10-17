@@ -2,13 +2,9 @@ package services
 
 import (
 	"fmt"
-	"time"
 
 	"user_service/models"
 	"user_service/repo"
-
-	"github.com/golang-jwt/jwt/v5"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type IUserService interface {
@@ -18,11 +14,13 @@ type IUserService interface {
 }
 
 type UserService struct {
-	userRepo repo.IUserRepo
+	userRepo     repo.IUserRepo
+	cryptService ICryptService
+	tokenService ITokenService
 }
 
-func NewUserService(userRepo repo.IUserRepo) IUserService {
-	return &UserService{userRepo: userRepo}
+func NewUserService(userRepo repo.IUserRepo, cryptService ICryptService, tokenService ITokenService) IUserService {
+	return &UserService{userRepo: userRepo, cryptService: cryptService, tokenService: tokenService}
 }
 
 func (u *UserService) Login(rb models.LoginRequest) (string, error) {
@@ -31,12 +29,12 @@ func (u *UserService) Login(rb models.LoginRequest) (string, error) {
 		return "", err
 	}
 
-	err = comparePasswords(user.Password, rb.Password)
+	err = u.cryptService.ComparePasswords(user.Password, rb.Password)
 	if err != nil {
 		return "", err
 	}
 
-	token, err := generateAccessToken(rb.Email)
+	token, err := u.tokenService.GenerateAccessToken(rb.Email)
 	if err != nil {
 		return "", err
 	}
@@ -51,12 +49,12 @@ func (u *UserService) Signup(rb models.SignupRequest) error {
 		return errMessage
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(rb.Password), bcrypt.DefaultCost)
+	hashedPassword, err := u.cryptService.GenerateHashPassword(rb.Password)
 	if err != nil {
 		return err
 	}
 
-	rb.Password = string(hashedPassword)
+	rb.Password = hashedPassword
 
 	err = u.userRepo.InsertUser(rb)
 	if err != nil {
@@ -73,22 +71,4 @@ func (u *UserService) VerifyUser() error {
 		return err
 	}
 	return nil
-}
-
-func comparePasswords(hashedPassword, password string) error {
-	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
-}
-
-func generateAccessToken(email string) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"email": email,
-		"nbf":   time.Now().Unix(),
-	})
-	//TODO: get the key from .env variables
-	tokenString, err := token.SignedString([]byte("mysecretkey"))
-	if err != nil {
-		return "", err
-	}
-
-	return tokenString, nil
 }
