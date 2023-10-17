@@ -8,7 +8,7 @@ import (
 	"user_service/apis/handlers"
 )
 
-func AddUserRoutes(ur *gin.Engine) {
+func AddUserRoutes(ur *gin.Engine, handlers handlers.IUserHandlers) {
 	ur.GET("/ping", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{
 			"message": "pong",
