@@ -15,7 +15,8 @@ func DbConnection() *sql.DB {
 			id SERIAL PRIMARY KEY,
 			username VARCHAR(50) NOT NULL,
 			email VARCHAR(100) NOT NULL,
-			password VARCHAR(100)
+			password VARCHAR(100),
+			is_verified BOOLEAN DEFAULT false
 		)
 	`
 	db, err := sql.Open("postgres", connectionStr)

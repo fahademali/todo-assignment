@@ -22,11 +22,9 @@ func NewUserRepo(db *sql.DB) IUserRepo {
 func (ur *UserRepo) GetUserByEmail(email string) (models.User, error) {
 
 	var user models.User
-	fmt.Println("Get users running")
-	fmt.Println(email)
 	row := ur.db.QueryRow("Select id, username, password From users WHERE email = $1", email)
 
-	if err := row.Scan(&user.Id, &user.Email, &user.Username, &user.Password); err != nil {
+	if err := row.Scan(&user.Email, &user.Password, &user.Id); err != nil {
 		fmt.Println("Error Occured")
 		if err == sql.ErrNoRows {
 			return user, fmt.Errorf("email %v is not linked to any user", email)

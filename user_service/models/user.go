@@ -9,16 +9,16 @@ type LoginRequestBody struct {
 }
 
 type SignupRequestBody struct {
-	UserName string `json:"user_name" binding:"required"`
+	UserName string `json:"username" binding:"required"`
 	Email    string `json:"email" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 
 type User struct {
-	Id         string
-	Email      string
-	Username   string
-	Password   string
-	IsVerified bool
-	Role       string
+	Id         int    `db:"id"`
+	Email      string `db:"email"`
+	Username   string `db:"username"`
+	Password   string `db:"password"`
+	Role       string `db:"role"`
+	IsVerified bool   `db:"is_verified"`
 }
