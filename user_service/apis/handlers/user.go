@@ -16,14 +16,16 @@ type IUserHandlers interface {
 	HandleRefreshToken(ctx *gin.Context)
 	HandleForgetPassword(ctx *gin.Context)
 	HandleVerifyUser(ctx *gin.Context)
+	HandlePingEmail(ctx *gin.Context)
 }
 
 type UserHandlers struct {
-	userService services.IUserService
+	userService  services.IUserService
+	emailService services.IEmailService
 }
 
-func NewUserHandlers(userService services.IUserService) IUserHandlers {
-	return &UserHandlers{userService: userService}
+func NewUserHandlers(userService services.IUserService, emailService services.IEmailService) IUserHandlers {
+	return &UserHandlers{userService: userService, emailService: emailService}
 }
 
 func (uh *UserHandlers) HandleGetProfile(ctx *gin.Context) {
@@ -63,14 +65,22 @@ func (uh *UserHandlers) HandleSignup(ctx *gin.Context) {
 		return
 	}
 
-	err := uh.userService.Signup(requestBody)
+	token, err := uh.userService.Signup(requestBody)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
+	// send email with token
+	err = uh.emailService.SendEmail(token, requestBody.Email)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	//ASK: should i just send the token in return or some message as well if not in this case is it appropriate to make the map on the fly
 	ctx.JSON(http.StatusOK, gin.H{
-		"message": "User has been created",
+		"message": token,
 	})
 }
 
@@ -87,8 +97,25 @@ func (uh *UserHandlers) HandleForgetPassword(ctx *gin.Context) {
 }
 
 func (uh *UserHandlers) HandleVerifyUser(ctx *gin.Context) {
+	accessToken := ctx.Param("token")
+	err := uh.userService.VerifyUser(accessToken)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
 	ctx.JSON(http.StatusOK, gin.H{
-		"message": "Oh not again! Weak Memory",
+		"message": "Your Email has been verified, you can use the app now.",
+	})
+}
+
+func (uh *UserHandlers) HandlePingEmail(ctx *gin.Context) {
+	err := uh.emailService.SendEmail("fahadshykh369@gmail.com", "sadfj")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "Email sent successfully",
 	})
 }

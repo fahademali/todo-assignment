@@ -36,7 +36,7 @@ func (ur *UserRepo) GetUserByEmail(email string) (models.User, error) {
 }
 
 func (ur *UserRepo) InsertUser(u models.SignupRequest) error {
-	_, err := ur.db.Exec("INSERT INTO users (username, email, password, role, is_verified) VALUES ($1, $2, $3, $4, $5)", u.UserName, u.Email, u.Password, u.Role, u.IsVerified)
+	_, err := ur.db.Exec("INSERT INTO users (username, email, password, role) VALUES ($1, $2, $3, $4)", u.UserName, u.Email, u.Password, u.Role)
 	if err != nil {
 		return fmt.Errorf("InsertUser: %v", err)
 	}
@@ -44,7 +44,7 @@ func (ur *UserRepo) InsertUser(u models.SignupRequest) error {
 }
 
 func (ur *UserRepo) VerifyUser(email string) error {
-	_, err := ur.db.Exec("UPDATE users SET is_verified = false where email = $1", email)
+	_, err := ur.db.Exec("UPDATE users SET is_verified = true where email = $1", email)
 	if err != nil {
 		return fmt.Errorf("InsertUser: %v", err)
 	}

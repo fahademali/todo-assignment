@@ -17,6 +17,8 @@ func AddUserRoutes(ur *gin.Engine, handlers handlers.IUserHandlers) {
 
 	ur.GET("/profile", handlers.HandleGetProfile)
 
+	ur.GET("/verify-user/:token", handlers.HandleVerifyUser)
+
 	ur.POST("/login", handlers.HandleLogin)
 
 	ur.POST("/signup", handlers.HandleSignup)
@@ -25,5 +27,5 @@ func AddUserRoutes(ur *gin.Engine, handlers handlers.IUserHandlers) {
 
 	ur.POST("/forget-password", handlers.HandleForgetPassword)
 
-	ur.POST("/verify-user", handlers.HandleVerifyUser)
+	ur.POST("/pingemailservice", handlers.HandlePingEmail)
 }
