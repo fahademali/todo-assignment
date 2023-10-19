@@ -16,7 +16,6 @@ type IUserHandlers interface {
 	HandleRefreshToken(ctx *gin.Context)
 	HandleForgetPassword(ctx *gin.Context)
 	HandleVerifyUser(ctx *gin.Context)
-	HandlePingEmail(ctx *gin.Context)
 }
 
 type UserHandlers struct {
@@ -71,16 +70,14 @@ func (uh *UserHandlers) HandleSignup(ctx *gin.Context) {
 		return
 	}
 
-	// send email with token
 	err = uh.emailService.SendEmail(token, requestBody.Email)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	//ASK: should i just send the token in return or some message as well if not in this case is it appropriate to make the map on the fly
 	ctx.JSON(http.StatusOK, gin.H{
-		"message": token,
+		"message": "Verfication email has been sent to your email address, please verify.",
 	})
 }
 
@@ -106,16 +103,5 @@ func (uh *UserHandlers) HandleVerifyUser(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "Your Email has been verified, you can use the app now.",
-	})
-}
-
-func (uh *UserHandlers) HandlePingEmail(ctx *gin.Context) {
-	err := uh.emailService.SendEmail("fahadshykh369@gmail.com", "sadfj")
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	ctx.JSON(http.StatusOK, gin.H{
-		"message": "Email sent successfully",
 	})
 }

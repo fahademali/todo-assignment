@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"user_service/config"
 
 	"user_service/models"
@@ -44,12 +43,6 @@ func (u *UserService) Login(rb models.LoginRequest) (string, error) {
 }
 
 func (u *UserService) Signup(rb models.SignupRequest) (string, error) {
-	_, err := u.userRepo.GetUserByEmail(rb.Email)
-	if err == nil {
-		errMessage := fmt.Errorf("account is already linked with %s", rb.Email)
-		return "", errMessage
-	}
-
 	hashedPassword, err := u.cryptService.GenerateHashPassword(rb.Password)
 	if err != nil {
 		return "", err

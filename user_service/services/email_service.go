@@ -23,7 +23,7 @@ func (es *EmailService) SendEmail(token string, receiverEmail string) error {
 	emailBody := `
 	<html>
 		<body>
-			<p>Hello <b>Bob</b> and <i>Cora</i>!</p>
+			<p>Hello!</p>
 			<p>Click the following link to verify your email address:</p>
 			<p><a href="` + verificationLink + `">Verify Email Address</a></p>
 		</body>
