@@ -14,6 +14,10 @@ type SignupRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type AdminPromotionRequest struct {
+	Email string `json:"email" binding:"required"`
+}
+
 type User struct {
 	ID         int    `db:"id"`
 	Username   string `db:"username"`

@@ -8,7 +8,7 @@ import (
 )
 
 type ITokenService interface {
-	GenerateAccessToken(email string, secretkey string) (string, error)
+	GenerateAccessToken(email string, role string, isVerified bool, secretkey string) (string, error)
 	GetEmailFromAccessToken(accessToken string, secretKey string) (string, error)
 }
 
@@ -19,12 +19,13 @@ func NewTokenService() ITokenService {
 	return &TokenService{}
 }
 
-func (ts *TokenService) GenerateAccessToken(email string, secretkey string) (string, error) {
+func (ts *TokenService) GenerateAccessToken(email string, role string, isVerified bool, secretkey string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"email": email,
-		"nbf":   time.Now().Unix(),
+		"email":      email,
+		"role":       role,
+		"isVerified": isVerified,
+		"nbf":        time.Now().Unix(),
 	})
-	//TODO: get the key from .env variables
 	tokenString, err := token.SignedString([]byte(secretkey))
 	if err != nil {
 		return "", err

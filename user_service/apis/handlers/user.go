@@ -16,6 +16,7 @@ type IUserHandlers interface {
 	HandleRefreshToken(ctx *gin.Context)
 	HandleForgetPassword(ctx *gin.Context)
 	HandleVerifyUser(ctx *gin.Context)
+	HandleGrantAdminRole(ctx *gin.Context)
 }
 
 type UserHandlers struct {
@@ -103,5 +104,23 @@ func (uh *UserHandlers) HandleVerifyUser(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "Your Email has been verified, you can use the app now.",
+	})
+}
+
+func (uh *UserHandlers) HandleGrantAdminRole(ctx *gin.Context) {
+	var requestBody models.AdminPromotionRequest
+	if err := ctx.ShouldBindJSON(&requestBody); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := uh.userService.GrantAdminRole(requestBody.Email)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "Admin Role has been granted to the provided email.",
 	})
 }

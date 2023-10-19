@@ -11,6 +11,7 @@ type IUserService interface {
 	Login(rb models.LoginRequest) (string, error)
 	Signup(rb models.SignupRequest) (string, error)
 	VerifyUser(uid string) error
+	GrantAdminRole(uid string) error
 }
 
 type UserService struct {
@@ -34,7 +35,7 @@ func (u *UserService) Login(rb models.LoginRequest) (string, error) {
 		return "", err
 	}
 
-	token, err := u.tokenService.GenerateAccessToken(rb.Email, config.AppConfig.SECRET_KEY)
+	token, err := u.tokenService.GenerateAccessToken(user.Email, user.Role, user.IsVerified, config.AppConfig.SECRET_KEY)
 	if err != nil {
 		return "", err
 	}
@@ -55,7 +56,7 @@ func (u *UserService) Signup(rb models.SignupRequest) (string, error) {
 		return "", err
 	}
 
-	token, err := u.tokenService.GenerateAccessToken(rb.Email, config.AppConfig.SECRET_KEY)
+	token, err := u.tokenService.GenerateAccessToken(rb.Email, "user", false, config.AppConfig.SECRET_KEY)
 	if err != nil {
 		return "", err
 	}
@@ -70,6 +71,14 @@ func (u *UserService) VerifyUser(uid string) error {
 	}
 
 	err = u.userRepo.VerifyUser(email)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u *UserService) GrantAdminRole(uid string) error {
+	err := u.userRepo.SetAdminRole(uid)
 	if err != nil {
 		return err
 	}

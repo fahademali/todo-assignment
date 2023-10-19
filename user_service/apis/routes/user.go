@@ -26,4 +26,6 @@ func AddUserRoutes(ur *gin.Engine, handlers handlers.IUserHandlers) {
 	ur.POST("/refresh-token", handlers.HandleRefreshToken)
 
 	ur.POST("/forget-password", handlers.HandleForgetPassword)
+
+	ur.PATCH("/grant-admin-role", handlers.HandleGrantAdminRole)
 }
