@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"user_service/config"
 
 	"user_service/models"
 	"user_service/repo"
@@ -34,7 +35,7 @@ func (u *UserService) Login(rb models.LoginRequest) (string, error) {
 		return "", err
 	}
 
-	token, err := u.tokenService.GenerateAccessToken(rb.Email)
+	token, err := u.tokenService.GenerateAccessToken(rb.Email, config.AppConfig.SECRET_KEY)
 	if err != nil {
 		return "", err
 	}
@@ -61,7 +62,7 @@ func (u *UserService) Signup(rb models.SignupRequest) (string, error) {
 		return "", err
 	}
 
-	token, err := u.tokenService.GenerateAccessToken(rb.Email)
+	token, err := u.tokenService.GenerateAccessToken(rb.Email, config.AppConfig.SECRET_KEY)
 	if err != nil {
 		return "", err
 	}
@@ -70,13 +71,11 @@ func (u *UserService) Signup(rb models.SignupRequest) (string, error) {
 }
 
 func (u *UserService) VerifyUser(uid string) error {
-	//TODO: remove hard code values
-	email, err := u.tokenService.GetEmailFromAccessToken(uid, "mysecretkey")
+	email, err := u.tokenService.GetEmailFromAccessToken(uid, config.AppConfig.SECRET_KEY)
 	if err != nil {
 		return err
 	}
-	fmt.Println("Extracted email from token")
-	fmt.Println(email)
+
 	err = u.userRepo.VerifyUser(email)
 	if err != nil {
 		return err

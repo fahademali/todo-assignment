@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"user_service/config"
 
 	"gopkg.in/gomail.v2"
 )
@@ -29,15 +30,20 @@ func (es *EmailService) SendEmail(token string, receiverEmail string) error {
 	</html>
 	`
 
+	fmt.Println(config.AppConfig.SENDER_EMAIL,
+		config.AppConfig.SMTP_SERVER,
+		config.AppConfig.SMTP_PORT,
+		config.AppConfig.SENDER_EMAIL,
+		config.AppConfig.SENDER_APP_PASS)
+
 	m := gomail.NewMessage()
-	m.SetHeader("From", "valeedtest@gmail.com")
+	m.SetHeader("From", config.AppConfig.SENDER_EMAIL)
 	m.SetHeader("To", receiverEmail)
 	m.SetHeader("Subject", "Verify your email address")
 	m.SetBody("text/html", emailBody)
 
-	d := gomail.NewDialer("smtp.gmail.com", 587, "valeedtest@gmail.com", "anhf fraz llzc karg")
+	d := gomail.NewDialer(config.AppConfig.SMTP_SERVER, config.AppConfig.SMTP_PORT, config.AppConfig.SENDER_EMAIL, config.AppConfig.SENDER_APP_PASS)
 
-	// Send the email to Bob, Cora and Dan.
 	if err := d.DialAndSend(m); err != nil {
 		return err
 	}

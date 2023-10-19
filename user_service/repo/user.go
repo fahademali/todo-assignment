@@ -32,6 +32,7 @@ func (ur *UserRepo) GetUserByEmail(email string) (models.User, error) {
 		}
 		return user, fmt.Errorf("GetUserByEmail %s: %v", email, err)
 	}
+	
 	return user, nil
 }
 

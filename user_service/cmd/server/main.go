@@ -5,6 +5,7 @@ import (
 
 	"user_service/apis/handlers"
 	"user_service/apis/routes"
+	"user_service/config"
 	"user_service/infra"
 	"user_service/repo"
 	"user_service/services"
@@ -12,6 +13,8 @@ import (
 
 func main() {
 	r := gin.Default()
+
+	config.Init()
 
 	db := infra.DbConnection()
 
