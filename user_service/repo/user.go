@@ -36,7 +36,7 @@ func (ur *UserRepo) GetUserByEmail(email string) (models.User, error) {
 }
 
 func (ur *UserRepo) InsertUser(u models.SignupRequest) error {
-	_, err := ur.db.Exec("INSERT INTO users (username, email, password, role) VALUES ($1, $2, $3, $4)", u.UserName, u.Email, u.Password, u.Role)
+	_, err := ur.db.Exec("INSERT INTO users (username, email, password) VALUES ($1, $2, $3)", u.UserName, u.Email, u.Password)
 	if err != nil {
 		return fmt.Errorf("InsertUser: %v", err)
 	}

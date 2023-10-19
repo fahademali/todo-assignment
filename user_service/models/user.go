@@ -9,11 +9,9 @@ type LoginRequest struct {
 }
 
 type SignupRequest struct {
-	UserName   string `json:"username" binding:"required"`
-	Email      string `json:"email" binding:"required"`
-	Password   string `json:"password" binding:"required"`
-	Role       string `json:"role" binding:"required"`
-	IsVerified bool   `json:"is_verified"`
+	UserName string `json:"username" binding:"required"`
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
 }
 
 type User struct {
