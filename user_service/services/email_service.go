@@ -2,50 +2,37 @@ package services
 
 import (
 	"fmt"
-	"user_service/config"
 
 	"gopkg.in/gomail.v2"
 )
 
 type IEmailService interface {
-	SendEmail(token string, receiverEmail string) error
+	SendEmail(receiverEmail string, subject string, body string) error
 }
 
 type EmailService struct {
+	senderEmail      string
+	senderAppPass    string
+	senderSmtpServer string
+	senderSmtpPort   int
 }
 
-func NewEmailService() IEmailService {
-	return &EmailService{}
+func NewEmailService(senderEmail string, senderAppPass string, senderSmtpServer string, senderSmtpPort int) IEmailService {
+	return &EmailService{senderEmail: senderEmail, senderAppPass: senderAppPass, senderSmtpServer: senderSmtpServer, senderSmtpPort: senderSmtpPort}
 }
 
-func (es *EmailService) SendEmail(token string, receiverEmail string) error {
-	verificationLink := fmt.Sprintf("http://localhost:8080/verify-user/%s", token)
-	emailBody := `
-	<html>
-		<body>
-			<p>Hello!</p>
-			<p>Click the following link to verify your email address:</p>
-			<p><a href="` + verificationLink + `">Verify Email Address</a></p>
-		</body>
-	</html>
-	`
+func (es *EmailService) SendEmail(receiverEmail string, subject string, body string) error {
 
-	fmt.Println(config.AppConfig.SENDER_EMAIL,
-		config.AppConfig.SMTP_SERVER,
-		config.AppConfig.SMTP_PORT,
-		config.AppConfig.SENDER_EMAIL,
-		config.AppConfig.SENDER_APP_PASS)
+	fmt.Println("SENDNIG ENMAIL......")
+	fmt.Println(es.senderSmtpServer, es.senderSmtpPort, es.senderEmail, es.senderAppPass)
 
-	m := gomail.NewMessage()
-	m.SetHeader("From", config.AppConfig.SENDER_EMAIL)
-	m.SetHeader("To", receiverEmail)
-	m.SetHeader("Subject", "Verify your email address")
-	m.SetBody("text/html", emailBody)
+	emailMsg := gomail.NewMessage()
+	emailMsg.SetHeader("From", es.senderEmail)
+	emailMsg.SetHeader("To", receiverEmail)
+	emailMsg.SetHeader("Subject", subject)
+	emailMsg.SetBody("text/html", body)
 
-	d := gomail.NewDialer(config.AppConfig.SMTP_SERVER, config.AppConfig.SMTP_PORT, config.AppConfig.SENDER_EMAIL, config.AppConfig.SENDER_APP_PASS)
+	dialer := gomail.NewDialer(es.senderSmtpServer, es.senderSmtpPort, es.senderEmail, es.senderAppPass)
 
-	if err := d.DialAndSend(m); err != nil {
-		return err
-	}
-	return nil
+	return dialer.DialAndSend(emailMsg)
 }

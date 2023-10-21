@@ -11,7 +11,6 @@ import (
 
 func DbConnection() *sql.DB {
 	connectionStr := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", config.AppConfig.POSTGRES_USER, config.AppConfig.POSTGRES_PASSWORD, config.AppConfig.POSTGRES_DB_NAME)
-	fmt.Println(connectionStr)
 	db, err := sql.Open("postgres", connectionStr)
 	if err != nil {
 		log.Fatalf("Error connecting to the database: %v", err)

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 
@@ -16,24 +17,35 @@ var AppConfig struct {
 	SMTP_SERVER       string
 	SMTP_PORT         int
 	SECRET_KEY        string
+	BASE_URL          string
 }
 
-func Init() {
+func init() {
 	if err := godotenv.Load(); err != nil {
-		// Handle error loading .env file
-		panic(err)
+		//TODO: Add log
+		fmt.Println("temporarily added to remove the warning")
 	}
-	AppConfig.POSTGRES_USER = os.Getenv("POSTGRES_USER")
-	AppConfig.POSTGRES_DB_NAME = os.Getenv("POSTGRES_DB_NAME")
-	AppConfig.POSTGRES_PASSWORD = os.Getenv("POSTGRES_PASSWORD")
-	AppConfig.SENDER_EMAIL = os.Getenv("SENDER_EMAIL")
-	AppConfig.SENDER_APP_PASS = os.Getenv("SENDER_APP_PASS")
-	AppConfig.SMTP_SERVER = os.Getenv("SMTP_SERVER")
-	AppConfig.SECRET_KEY = os.Getenv("SECRET_KEY")
+	AppConfig.POSTGRES_USER = getEnvValue("POSTGRES_USER", "user")
+	AppConfig.POSTGRES_DB_NAME = getEnvValue("POSTGRES_DB_NAME", "user")
+	AppConfig.POSTGRES_PASSWORD = getEnvValue("POSTGRES_PASSWORD", "mypassword")
+	AppConfig.SENDER_EMAIL = getEnvValue("SENDER_EMAIL", "valeedtest@gmail.com")
+	AppConfig.SENDER_APP_PASS = getEnvValue("SENDER_APP_PASS", "anhf fraz llzc karg")
+	AppConfig.SMTP_SERVER = getEnvValue("SMTP_SERVER", "smtp.gmail.com")
+	AppConfig.SECRET_KEY = getEnvValue("SECRET_KEY", "mysecretkey")
+	AppConfig.BASE_URL = getEnvValue("BASE_URL", "http://localhost:8080")
 
-	if val, ok := os.LookupEnv("SMTP_PORT"); ok {
-		if intVal, err := strconv.Atoi(val); err == nil {
-			AppConfig.SMTP_PORT = intVal
-		}
+	if intVal, err := strconv.Atoi(getEnvValue("SMTP_PORT", "587")); err == nil {
+		AppConfig.SMTP_PORT = intVal
 	}
+	fmt.Println("os.Getenv('SENDER_APP_PASS')")
+	fmt.Println(os.Getenv("SENDER_APP_PASS"))
+	fmt.Println(AppConfig)
+}
+
+func getEnvValue(key string, defaultValue string) string {
+	if envValue := os.Getenv(key); envValue != "" {
+		return envValue
+	}
+
+	return defaultValue
 }

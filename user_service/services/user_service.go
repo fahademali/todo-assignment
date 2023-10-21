@@ -1,8 +1,7 @@
 package services
 
 import (
-	"user_service/config"
-
+	"fmt"
 	"user_service/models"
 	"user_service/repo"
 )
@@ -24,7 +23,7 @@ func NewUserService(userRepo repo.IUserRepo, cryptService ICryptService, tokenSe
 }
 
 func (u *UserService) Login(rb models.LoginRequest) (string, error) {
-	user, err := u.userRepo.GetUserByEmail(rb.Email)
+	user, err := u.userRepo.GetByEmail(rb.Email)
 	if err != nil {
 		return "", err
 	}
@@ -34,7 +33,7 @@ func (u *UserService) Login(rb models.LoginRequest) (string, error) {
 		return "", err
 	}
 
-	token, err := u.tokenService.GenerateAccessToken(rb.Email, config.AppConfig.SECRET_KEY)
+	token, err := u.tokenService.GenerateAccessToken(rb.Email)
 	if err != nil {
 		return "", err
 	}
@@ -50,12 +49,12 @@ func (u *UserService) Signup(rb models.SignupRequest) (string, error) {
 
 	rb.Password = hashedPassword
 
-	err = u.userRepo.InsertUser(rb)
+	err = u.userRepo.Insert(rb)
 	if err != nil {
 		return "", err
 	}
 
-	token, err := u.tokenService.GenerateAccessToken(rb.Email, config.AppConfig.SECRET_KEY)
+	token, err := u.tokenService.GenerateAccessToken(rb.Email)
 	if err != nil {
 		return "", err
 	}
@@ -64,14 +63,14 @@ func (u *UserService) Signup(rb models.SignupRequest) (string, error) {
 }
 
 func (u *UserService) VerifyUser(uid string) error {
-	email, err := u.tokenService.GetEmailFromAccessToken(uid, config.AppConfig.SECRET_KEY)
+	user, err := u.userRepo.GetByEmail(uid)
 	if err != nil {
 		return err
 	}
+	fmt.Println("VERIFY USER RUNNING SERVICE...........")
+	fmt.Println(user)
 
-	err = u.userRepo.VerifyUser(email)
-	if err != nil {
-		return err
-	}
-	return nil
+	user.IsVerified = true
+
+	return u.userRepo.UpdateByEmail(uid, user)
 }

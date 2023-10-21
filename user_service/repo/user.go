@@ -9,9 +9,9 @@ import (
 )
 
 type IUserRepo interface {
-	GetUserByEmail(email string) (models.User, error)
-	InsertUser(u models.SignupRequest) error
-	VerifyUser(email string) error
+	GetByEmail(email string) (models.User, error)
+	Insert(u models.SignupRequest) error
+	UpdateByEmail(email string, user models.User) error
 }
 
 type UserRepo struct {
@@ -22,7 +22,7 @@ func NewUserRepo(db *sql.DB) IUserRepo {
 	return &UserRepo{db: db}
 }
 
-func (ur *UserRepo) GetUserByEmail(email string) (models.User, error) {
+func (ur *UserRepo) GetByEmail(email string) (models.User, error) {
 
 	var user models.User
 	row := ur.db.QueryRow("Select * From users WHERE email = $1", email)
@@ -30,24 +30,24 @@ func (ur *UserRepo) GetUserByEmail(email string) (models.User, error) {
 		if errors.Is(err, sql.ErrNoRows) {
 			return user, fmt.Errorf("email %s is not linked to any user", email)
 		}
-		return user, fmt.Errorf("GetUserByEmail %s: %v", email, err)
+		return user, fmt.Errorf("GetByEmail %s: %v", email, err)
 	}
-	
+
 	return user, nil
 }
 
-func (ur *UserRepo) InsertUser(u models.SignupRequest) error {
+func (ur *UserRepo) Insert(u models.SignupRequest) error {
 	_, err := ur.db.Exec("INSERT INTO users (username, email, password) VALUES ($1, $2, $3)", u.UserName, u.Email, u.Password)
 	if err != nil {
-		return fmt.Errorf("InsertUser: %v", err)
+		return fmt.Errorf("Insert: %v", err)
 	}
 	return nil
 }
 
-func (ur *UserRepo) VerifyUser(email string) error {
-	_, err := ur.db.Exec("UPDATE users SET is_verified = true where email = $1", email)
+func (ur *UserRepo) UpdateByEmail(email string, user models.User) error {
+	_, err := ur.db.Exec("UPDATE users SET username = $1, role = $2, is_verified = $3 where email = $4", user.Username, user.Role, user.IsVerified, user.Email)
 	if err != nil {
-		return fmt.Errorf("InsertUser: %v", err)
+		return fmt.Errorf("UpdateByEmail: %v", err)
 	}
 	return nil
 }
