@@ -1,22 +1,24 @@
 package models
 
-type ProfileRequestBody struct {
+type ProfileRequest struct {
 	Token string `json:"token" binding:"required"`
 }
-type LoginRequestBody struct {
+type LoginRequest struct {
 	Email    string `json:"email" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 
-type SignupRequestBody struct {
-	UserName string `json:"user_name" binding:"required"`
+type SignupRequest struct {
+	UserName string `json:"username" binding:"required"`
 	Email    string `json:"email" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 
 type User struct {
-	Id       string
-	Email    string
-	Username string
-	Password string
+	ID         int    `db:"id"`
+	Username   string `db:"username"`
+	Email      string `db:"email"`
+	Password   string `db:"password"`
+	Role       string `db:"role"`
+	IsVerified bool   `db:"is_verified"`
 }
