@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"user_service/config"
 	"user_service/models"
 	"user_service/services"
 )
@@ -15,6 +14,7 @@ type IUserHandlers interface {
 	HandleGetProfile(ctx *gin.Context)
 	HandleLogin(ctx *gin.Context)
 	HandleSignup(ctx *gin.Context)
+	HandleSignupTx(ctx *gin.Context)
 	HandleRefreshToken(ctx *gin.Context)
 	HandleForgetPassword(ctx *gin.Context)
 	HandleVerifyUser(ctx *gin.Context)
@@ -68,26 +68,26 @@ func (uh *UserHandlers) HandleSignup(ctx *gin.Context) {
 		return
 	}
 
-	token, err := uh.userService.Signup(requestBody)
+	_, err := uh.userService.Signup(requestBody)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	fmt.Println("user inserted/.....................")
 
-	verificationLink := fmt.Sprintf("%s/verify-user/%s", config.AppConfig.BASE_URL, token)
-	emailBody := `
-	<html>
-		<body>
-			<p>Hello!</p>
-			<p>Click the following link to verify your email address:</p>
-			<p><a href="` + verificationLink + `">Verify Email Address</a></p>
-		</body>
-	</html>
-	`
-	fmt.Println(verificationLink)
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": "Verfication email has been sent to your email address, please verify.",
+	})
+}
 
-	err = uh.emailService.SendEmail(requestBody.Email, "Verfify Email Address", emailBody)
+func (uh *UserHandlers) HandleSignupTx(ctx *gin.Context) {
+	var requestBody models.SignupRequest
+
+	if err := ctx.ShouldBindJSON(&requestBody); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := uh.userService.SignupTx(ctx, requestBody)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

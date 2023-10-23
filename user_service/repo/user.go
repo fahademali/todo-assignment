@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -11,7 +12,9 @@ import (
 type IUserRepo interface {
 	GetByEmail(email string) (models.User, error)
 	Insert(u models.SignupRequest) error
+	InsertTx(ctx context.Context, tx *sql.Tx, u models.SignupRequest) error
 	UpdateByEmail(email string, user models.User) error
+	ExecTx(ctx context.Context) (*sql.Tx, error)
 }
 
 type UserRepo struct {
@@ -44,10 +47,22 @@ func (ur *UserRepo) Insert(u models.SignupRequest) error {
 	return nil
 }
 
+func (ur *UserRepo) InsertTx(ctx context.Context, tx *sql.Tx, u models.SignupRequest) error {
+	_, err := tx.ExecContext(ctx, "INSERT INTO users (username, email, password) VALUES ($1, $2, $3)", u.UserName, u.Email, u.Password)
+	if err != nil {
+		return fmt.Errorf("Insert: %v", err)
+	}
+	return nil
+}
+
 func (ur *UserRepo) UpdateByEmail(email string, user models.User) error {
 	_, err := ur.db.Exec("UPDATE users SET username = $1, role = $2, is_verified = $3 where email = $4", user.Username, user.Role, user.IsVerified, user.Email)
 	if err != nil {
 		return fmt.Errorf("UpdateByEmail: %v", err)
 	}
 	return nil
+}
+
+func (ur *UserRepo) ExecTx(ctx context.Context) (*sql.Tx, error) {
+	return ur.db.BeginTx(ctx, nil)
 }

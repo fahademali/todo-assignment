@@ -28,7 +28,7 @@ func main() {
 	cryptService = services.NewCryptService()
 	tokenService = services.NewTokenService(config.AppConfig.SECRET_KEY)
 	emailService = services.NewEmailService(config.AppConfig.SENDER_EMAIL, config.AppConfig.SENDER_APP_PASS, config.AppConfig.SMTP_SERVER, config.AppConfig.SMTP_PORT)
-	userService = services.NewUserService(userRepo, cryptService, tokenService)
+	userService = services.NewUserService(userRepo, cryptService, tokenService, emailService)
 
 	userHandlers = handlers.NewUserHandlers(userService, emailService, tokenService)
 
