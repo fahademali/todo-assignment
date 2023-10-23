@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"user_service/log"
 
 	"gopkg.in/gomail.v2"
 )
@@ -23,9 +24,8 @@ func NewEmailService(senderEmail string, senderAppPass string, senderSmtpServer 
 }
 
 func (es *EmailService) SendEmail(receiverEmail string, subject string, body string) error {
-
-	fmt.Println("SENDNIG ENMAIL......")
-	fmt.Println(es.senderSmtpServer, es.senderSmtpPort, es.senderEmail, es.senderAppPass)
+	log := log.GetLog()
+	log.Info("SENDNIG ENMAIL......")
 
 	emailMsg := gomail.NewMessage()
 	emailMsg.SetHeader("From", es.senderEmail)
@@ -39,9 +39,8 @@ func (es *EmailService) SendEmail(receiverEmail string, subject string, body str
 }
 
 func (es *EmailService) SendEmailTx(receiverEmail string, subject string, body string) error {
-
-	fmt.Println("SENDNIG ENMAIL......")
-	fmt.Println(es.senderSmtpServer, es.senderSmtpPort, es.senderEmail, es.senderAppPass)
+	log := log.GetLog()
+	log.Info("SENDNIG ENMAIL......")
 
 	emailMsg := gomail.NewMessage()
 	emailMsg.SetHeader("From", es.senderEmail)
@@ -53,5 +52,5 @@ func (es *EmailService) SendEmailTx(receiverEmail string, subject string, body s
 	_ = gomail.NewDialer(es.senderSmtpServer, es.senderSmtpPort, es.senderEmail, es.senderAppPass)
 
 	// return dialer.DialAndSend(emailMsg)
-	return fmt.Errorf("error htrown to test transaction fn:SendEmail")
+	return fmt.Errorf("error thrown to test transaction fn:SendEmail")
 }

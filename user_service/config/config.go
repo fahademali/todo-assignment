@@ -1,9 +1,9 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"strconv"
+	"user_service/log"
 
 	"github.com/joho/godotenv"
 )
@@ -21,9 +21,9 @@ var AppConfig struct {
 }
 
 func init() {
+	log := log.GetLog()
 	if err := godotenv.Load(); err != nil {
-		//TODO: Add log
-		fmt.Println("temporarily added to remove the warning")
+		log.Error("failed to load env variables")
 	}
 	AppConfig.POSTGRES_USER = getEnvValue("POSTGRES_USER", "user")
 	AppConfig.POSTGRES_DB_NAME = getEnvValue("POSTGRES_DB_NAME", "user")
@@ -37,9 +37,6 @@ func init() {
 	if intVal, err := strconv.Atoi(getEnvValue("SMTP_PORT", "587")); err == nil {
 		AppConfig.SMTP_PORT = intVal
 	}
-	fmt.Println("os.Getenv('SENDER_APP_PASS')")
-	fmt.Println(os.Getenv("SENDER_APP_PASS"))
-	fmt.Println(AppConfig)
 }
 
 func getEnvValue(key string, defaultValue string) string {

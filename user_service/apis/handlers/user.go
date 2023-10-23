@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -43,7 +42,6 @@ func (uh *UserHandlers) HandleGetProfile(ctx *gin.Context) {
 }
 
 func (uh *UserHandlers) HandleLogin(ctx *gin.Context) {
-	fmt.Println("Running Handle Login.....")
 	var requestBody models.LoginRequest
 
 	if err := ctx.ShouldBindJSON(&requestBody); err != nil {
@@ -111,9 +109,6 @@ func (uh *UserHandlers) HandleForgetPassword(ctx *gin.Context) {
 }
 
 func (uh *UserHandlers) HandleVerifyUser(ctx *gin.Context) {
-	fmt.Println("running HandleVerifyUser......................")
-	fmt.Println(uh)
-	fmt.Println(uh.userService)
 	accessToken := ctx.Param("token")
 
 	email, err := uh.tokenService.GetEmailFromAccessToken(accessToken)

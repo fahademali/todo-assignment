@@ -63,8 +63,6 @@ func (u *UserService) Signup(rb models.SignupRequest) (string, error) {
 		return "", err
 	}
 
-	fmt.Println("user inserted/.....................")
-
 	verificationLink := fmt.Sprintf("%s/verify-user/%s", config.AppConfig.BASE_URL, token)
 	emailBody := `
 	<html>
@@ -75,7 +73,6 @@ func (u *UserService) Signup(rb models.SignupRequest) (string, error) {
 		</body>
 	</html>
 	`
-	fmt.Println(verificationLink)
 
 	err = u.emailService.SendEmailTx(rb.Email, "Verfify Email Address", emailBody)
 	if err != nil {
@@ -110,8 +107,6 @@ func (u *UserService) SignupTx(ctx context.Context, rb models.SignupRequest) err
 		return err
 	}
 
-	fmt.Println("user inserted/.....................")
-
 	verificationLink := fmt.Sprintf("%s/verify-user/%s", config.AppConfig.BASE_URL, token)
 	emailBody := `
 	<html>
@@ -122,7 +117,6 @@ func (u *UserService) SignupTx(ctx context.Context, rb models.SignupRequest) err
 		</body>
 	</html>
 	`
-	fmt.Println(verificationLink)
 
 	err = u.emailService.SendEmailTx(rb.Email, "Verfify Email Address", emailBody)
 	if err != nil {
@@ -136,8 +130,6 @@ func (u *UserService) VerifyUser(uid string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("VERIFY USER RUNNING SERVICE...........")
-	fmt.Println(user)
 
 	user.IsVerified = true
 

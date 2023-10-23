@@ -25,8 +25,6 @@ func (ts *TokenService) GenerateAccessToken(email string) (string, error) {
 		"email": email,
 		"nbf":   time.Now().Unix(),
 	})
-	fmt.Println("ts.secretKey")
-	fmt.Println(ts.secretKey)
 	tokenString, err := token.SignedString(ts.secretKey)
 	if err != nil {
 		return "", err
@@ -36,7 +34,6 @@ func (ts *TokenService) GenerateAccessToken(email string) (string, error) {
 }
 
 func (ts *TokenService) GetEmailFromAccessToken(accessToken string) (string, error) {
-	fmt.Println("runnnning GetEmailFromAccessToken...............")
 
 	token, err := jwt.Parse(accessToken, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -44,13 +41,10 @@ func (ts *TokenService) GetEmailFromAccessToken(accessToken string) (string, err
 		}
 		return ts.secretKey, nil
 	})
-	fmt.Println(ts.secretKey)
 
 	if err != nil {
 		return "", err
 	}
-	fmt.Println("token")
-	fmt.Println(token)
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		email := claims["email"].(string)
