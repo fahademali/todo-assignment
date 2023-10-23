@@ -74,7 +74,7 @@ func (u *UserService) Signup(rb models.SignupRequest) (string, error) {
 	</html>
 	`
 
-	err = u.emailService.SendEmailTx(rb.Email, "Verfify Email Address", emailBody)
+	err = u.emailService.SendEmail(rb.Email, "Verfify Email Address", emailBody)
 	if err != nil {
 		return "", err
 	}
