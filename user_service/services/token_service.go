@@ -3,6 +3,8 @@ package services
 import (
 	"fmt"
 	"time"
+	"user_service/log"
+	"user_service/models"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -10,7 +12,7 @@ import (
 type ITokenService interface {
 	GenerateAccessToken(email string, role string, isVerified bool) (string, error)
 	GetEmailFromAccessToken(accessToken string) (string, error)
-	ParseToken(accessToken string, secretKey string) (jwt.MapClaims, error)
+	GetInfoFromToken(accessToken string) (models.UserInfo, error)
 }
 
 type TokenService struct {
@@ -57,23 +59,46 @@ func (ts *TokenService) GetEmailFromAccessToken(accessToken string) (string, err
 	return "", fmt.Errorf("invalid token or missing email claim")
 }
 
-func (ts *TokenService) ParseToken(accessToken string, secretKey string) (jwt.MapClaims, error) {
+func (ts *TokenService) GetInfoFromToken(accessToken string) (models.UserInfo, error) {
 	token, err := jwt.Parse(accessToken, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(secretKey), nil
+		return ts.secretKey, nil
 	})
 
 	if err != nil {
-		return nil, err
+		return models.UserInfo{}, err
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		log.GetLog().Info("claims")
+		log.GetLog().Info(claims)
+		email, ok := claims["email"].(string)
+		if !ok {
+			return models.UserInfo{}, fmt.Errorf("invalid token or missing email claim")
+		}
+		isVerified, ok := claims["isVerified"].(bool)
+		if !ok {
+			return models.UserInfo{}, fmt.Errorf("invalid token or missing isVerified claim")
+		}
+		nbf, ok := claims["nbf"].(float64)
+		if !ok {
+			return models.UserInfo{}, fmt.Errorf("invalid token or missing nbf claim")
+		}
+		role, ok := claims["role"].(string)
+		if !ok {
+			return models.UserInfo{}, fmt.Errorf("invalid token or missing role claim")
+		}
 
-		return claims, nil
+		return models.UserInfo{
+			Email:      email,
+			IsVerified: isVerified,
+			Nbf:        nbf,
+			Role:       role,
+		}, nil
 	}
 
-	return nil, fmt.Errorf("invalid token or missing email claim")
+	return models.UserInfo{}, fmt.Errorf("invalid token or missing email claim")
 
 }

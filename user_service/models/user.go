@@ -27,20 +27,9 @@ type User struct {
 	IsVerified bool   `db:"is_verified"`
 }
 
-type ApiResponse struct {
-	Status  string      `json:"status"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data"`
-}
-
-type SuccessResponse struct {
-	Status  string      `json:"status"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data"`
-}
-
-type ErrorResponse struct {
-	Status  string      `json:"status"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data"`
+type UserInfo struct {
+	Email      string  `json:"email"`
+	Role       string  `json:"role"`
+	IsVerified bool    `json:"isVerified"`
+	Nbf        float64 `json:"nbf"`
 }

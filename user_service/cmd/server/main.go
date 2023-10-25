@@ -7,6 +7,7 @@ import (
 	"user_service/apis/routes"
 	"user_service/config"
 	"user_service/infra"
+	"user_service/middlewares"
 	"user_service/repo"
 	"user_service/services"
 )
@@ -22,6 +23,7 @@ func main() {
 	var cryptService services.ICryptService
 	var userService services.IUserService
 	var userHandlers handlers.IUserHandlers
+	var userMiddleware middlewares.IUserMiddleware
 
 	userRepo = repo.NewUserRepo(db)
 
@@ -30,9 +32,11 @@ func main() {
 	emailService = services.NewEmailService(config.AppConfig.SENDER_EMAIL, config.AppConfig.SENDER_APP_PASS, config.AppConfig.SMTP_SERVER, config.AppConfig.SMTP_PORT)
 	userService = services.NewUserService(userRepo, cryptService, tokenService, emailService)
 
+	userMiddleware = middlewares.NewUserMiddlewares(tokenService)
+
 	userHandlers = handlers.NewUserHandlers(userService, emailService, tokenService)
 
-	routes.AddUserRoutes(r, userHandlers)
+	routes.AddUserRoutes(r, userHandlers, userMiddleware)
 
 	r.Run()
 }
