@@ -13,7 +13,6 @@ type IUserHandlers interface {
 	HandleGetProfile(ctx *gin.Context)
 	HandleLogin(ctx *gin.Context)
 	HandleSignup(ctx *gin.Context)
-	HandleSignupTx(ctx *gin.Context)
 	HandleRefreshToken(ctx *gin.Context)
 	HandleForgetPassword(ctx *gin.Context)
 	HandleVerifyUser(ctx *gin.Context)
@@ -30,6 +29,16 @@ func NewUserHandlers(userService services.IUserService, emailService services.IE
 	return &UserHandlers{userService: userService, emailService: emailService, tokenService: tokenService}
 }
 
+var successResponse = models.SuccessResponse{
+	Status:  "success",
+	Message: "Request was successfull",
+}
+
+var errorResponse = models.ErrorResponse{
+	Status:  "error",
+	Message: "Request failed",
+}
+
 func (uh *UserHandlers) HandleGetProfile(ctx *gin.Context) {
 	var requestBody models.ProfileRequest
 
@@ -37,9 +46,9 @@ func (uh *UserHandlers) HandleGetProfile(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{
-		"data": "/getprofile Not Implemented yet",
-	})
+
+	successResponse.Data = "/getprofile Not Implemented yet"
+	ctx.JSON(http.StatusOK, successResponse)
 }
 
 func (uh *UserHandlers) HandleLogin(ctx *gin.Context) {
@@ -54,9 +63,9 @@ func (uh *UserHandlers) HandleLogin(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{
-		"data": token,
-	})
+
+	successResponse.Data = token
+	ctx.JSON(http.StatusOK, successResponse)
 }
 
 func (uh *UserHandlers) HandleSignup(ctx *gin.Context) {
@@ -67,46 +76,24 @@ func (uh *UserHandlers) HandleSignup(ctx *gin.Context) {
 		return
 	}
 
-	_, err := uh.userService.Signup(requestBody)
+	err := uh.userService.Signup(ctx, requestBody)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"data": "Verfication email has been sent to your email address, please verify.",
-	})
-}
-
-func (uh *UserHandlers) HandleSignupTx(ctx *gin.Context) {
-	var requestBody models.SignupRequest
-
-	if err := ctx.ShouldBindJSON(&requestBody); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	err := uh.userService.SignupTx(ctx, requestBody)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	ctx.JSON(http.StatusOK, gin.H{
-		"data": "Verfication email has been sent to your email address, please verify.",
-	})
+	successResponse.Data = "Verfication email has been sent to your email address, please verify."
+	ctx.JSON(http.StatusOK, successResponse)
 }
 
 func (uh *UserHandlers) HandleRefreshToken(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, gin.H{
-		"data": "/refresh-token Not Implemented yet",
-	})
+	successResponse.Data = "/refresh-token Not Implemented yet."
+	ctx.JSON(http.StatusOK, successResponse)
 }
 
 func (uh *UserHandlers) HandleForgetPassword(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, gin.H{
-		"data": "Oh not again! Weak Memory",
-	})
+	successResponse.Data = "Oh not again! Weak Memory."
+	ctx.JSON(http.StatusOK, successResponse)
 }
 
 func (uh *UserHandlers) HandleVerifyUser(ctx *gin.Context) {
@@ -124,9 +111,8 @@ func (uh *UserHandlers) HandleVerifyUser(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"data": "Your Email has been verified, you can use the app now.",
-	})
+	successResponse.Data = "Your Email has been verified, you can use the app now."
+	ctx.JSON(http.StatusOK, successResponse)
 }
 
 func (uh *UserHandlers) HandleGrantAdminRole(ctx *gin.Context) {
@@ -142,7 +128,6 @@ func (uh *UserHandlers) HandleGrantAdminRole(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"message": "Admin Role has been granted to the provided email.",
-	})
+	successResponse.Data = "Admin Role has been granted to the provided email."
+	ctx.JSON(http.StatusOK, successResponse)
 }

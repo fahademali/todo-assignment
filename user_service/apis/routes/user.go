@@ -23,8 +23,6 @@ func AddUserRoutes(ur *gin.Engine, handlers handlers.IUserHandlers) {
 
 	ur.POST("/signup", handlers.HandleSignup)
 
-	ur.POST("/signuptx", handlers.HandleSignupTx)
-
 	ur.POST("/refresh-token", handlers.HandleRefreshToken)
 
 	ur.POST("/forget-password", handlers.HandleForgetPassword)
