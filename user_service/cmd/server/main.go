@@ -14,8 +14,6 @@ import (
 func main() {
 	r := gin.Default()
 
-	config.Init()
-
 	db := infra.DbConnection()
 
 	var userRepo repo.IUserRepo
@@ -28,11 +26,11 @@ func main() {
 	userRepo = repo.NewUserRepo(db)
 
 	cryptService = services.NewCryptService()
-	tokenService = services.NewTokenService()
-	emailService = services.NewEmailService()
-	userService = services.NewUserService(userRepo, cryptService, tokenService)
+	tokenService = services.NewTokenService(config.AppConfig.SECRET_KEY)
+	emailService = services.NewEmailService(config.AppConfig.SENDER_EMAIL, config.AppConfig.SENDER_APP_PASS, config.AppConfig.SMTP_SERVER, config.AppConfig.SMTP_PORT)
+	userService = services.NewUserService(userRepo, cryptService, tokenService, emailService)
 
-	userHandlers = handlers.NewUserHandlers(userService, emailService)
+	userHandlers = handlers.NewUserHandlers(userService, emailService, tokenService)
 
 	routes.AddUserRoutes(r, userHandlers)
 
