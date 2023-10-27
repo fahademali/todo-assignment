@@ -13,6 +13,7 @@ import (
 
 type ITodoHandlers interface {
 	Ping(ctx *gin.Context)
+	HandleCreateList(ctx *gin.Context)
 	HandleCreateTodo(ctx *gin.Context)
 	HandleDeleteTodo(ctx *gin.Context)
 	HandleGetTodo(ctx *gin.Context)
@@ -33,8 +34,8 @@ func (th *TodoHandlers) Ping(ctx *gin.Context) {
 	})
 }
 
-func (th *TodoHandlers) HandleCreateTodo(ctx *gin.Context) {
-	var requestBody models.TodoInput
+func (th *TodoHandlers) HandleCreateList(ctx *gin.Context) {
+	var requestBody models.CreateListRequest
 
 	if err := ctx.ShouldBindJSON(&requestBody); err != nil {
 		// errorResponse := httpResponse.GetErrorResponse(err.Error())
@@ -42,13 +43,28 @@ func (th *TodoHandlers) HandleCreateTodo(ctx *gin.Context) {
 		return
 	}
 
-	if err := th.todoService.CreateTodo(requestBody); err != nil {
+	if err := th.todoService.CreateList(requestBody); err != nil {
 		ctx.JSON(http.StatusBadRequest, err.Error())
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
-		"message": "todo has been created",
+		"message": "list has been created",
 	})
+}
+
+func (th *TodoHandlers) HandleCreateTodo(ctx *gin.Context) {
+	var requestBody models.TodoInput
+
+	if err := ctx.ShouldBindJSON(&requestBody); err != nil {
+		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(err.Error()))
+		return
+	}
+
+	if err := th.todoService.CreateTodo(requestBody); err != nil {
+		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(err.Error()))
+	}
+
+	ctx.JSON(http.StatusOK, httpResponse.GetSuccessResponse("todo has been created"))
 }
 
 func (th *TodoHandlers) HandleDeleteTodo(ctx *gin.Context) {

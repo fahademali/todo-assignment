@@ -9,6 +9,7 @@ import (
 )
 
 type ITodoService interface {
+	CreateList(requestBody models.CreateListRequest) error
 	CreateTodo(requestBody models.TodoInput) error
 	DeleteTodo(id string) error
 	GetTodo(id string) (models.Todo, error)
@@ -21,6 +22,11 @@ type TodoService struct {
 
 func NewTodoService(todoRepo repo.ITodoRepo) ITodoService {
 	return &TodoService{todoRepo: todoRepo}
+}
+
+func (ts *TodoService) CreateList(requestBody models.CreateListRequest) error {
+	err := ts.todoRepo.InsertList(requestBody.Name)
+	return err
 }
 
 func (ts *TodoService) CreateTodo(requestBody models.TodoInput) error {

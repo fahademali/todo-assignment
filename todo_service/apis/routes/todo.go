@@ -8,10 +8,12 @@ import (
 
 func AddRoutes(tr *gin.Engine, handlers handlers.ITodoHandlers) {
 	tr.GET("/ping", handlers.Ping)
-
-	tr.POST("/todos", handlers.HandleCreateTodo)
+	//TODO: check naming convention for path param
+	tr.POST("/lists", handlers.HandleCreateList)
 
 	tr.GET("/todos/:id", handlers.HandleGetTodo)
+
+	tr.POST("/todos", handlers.HandleCreateTodo)
 
 	tr.DELETE("/todos/:id", handlers.HandleDeleteTodo)
 
