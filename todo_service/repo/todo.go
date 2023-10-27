@@ -11,6 +11,7 @@ type ITodoRepo interface {
 	Insert(title string, description string, dueDate time.Time) error
 	Delete(id string) error
 	Get(id string) (models.Todo, error)
+	Update(id string, updatedTodo models.Todo) error
 }
 
 type TodoRepo struct {
@@ -47,4 +48,12 @@ func (tr *TodoRepo) Get(id string) (models.Todo, error) {
 	default:
 		return todo, nil
 	}
+}
+
+func (tr *TodoRepo) Update(id string, updatedTodo models.Todo) error {
+	_, err := tr.db.Exec("UPDATE todos SET title = $1, description = $2, due_date = $3, is_complete=$4, completion_date=$5 where id = $6", updatedTodo.Title, updatedTodo.Description, updatedTodo.DueDate, updatedTodo.IsComplete, updatedTodo.CompletionDate, updatedTodo.ID)
+	if err != nil {
+		return fmt.Errorf("Update Repo: %v", err)
+	}
+	return nil
 }

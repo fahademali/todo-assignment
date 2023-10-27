@@ -5,4 +5,4 @@ SET DEFAULT NULL;
 -- Add the default value of NULL for the 'completion_date' column
 ALTER TABLE todos
 ALTER COLUMN completion_date
-SET DEFAULT NULL;
+SET DEFAULT '0001-01-01 00:00:00';

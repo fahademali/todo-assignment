@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"user_service/log"
 
 	"github.com/gin-gonic/gin"
 
@@ -75,7 +76,7 @@ func (th *TodoHandlers) HandleGetTodo(ctx *gin.Context) {
 
 func (th *TodoHandlers) HandleUpdateTodo(ctx *gin.Context) {
 	//TODO: should i keep todoId as a string
-	var requestBody models.TodoInput
+	var requestBody models.UpdateTodoRequest
 
 	todoID := ctx.Param("id")
 
@@ -84,12 +85,13 @@ func (th *TodoHandlers) HandleUpdateTodo(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
+	log.GetLog().Info(requestBody)
 
-	todo, err := th.todoService.UpdateTodo(todoID, requestBody)
+	err := th.todoService.UpdateTodo(todoID, requestBody)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(err.Error()))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, httpResponse.GetSuccessResponse(todo))
+	ctx.JSON(http.StatusOK, httpResponse.GetSuccessResponse("todo has been updated"))
 }

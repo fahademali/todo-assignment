@@ -1,6 +1,9 @@
 package services
 
 import (
+	"fmt"
+	"reflect"
+	"time"
 	"todo_service/models"
 	"todo_service/repo"
 )
@@ -9,7 +12,7 @@ type ITodoService interface {
 	CreateTodo(requestBody models.TodoInput) error
 	DeleteTodo(id string) error
 	GetTodo(id string) (models.Todo, error)
-	UpdateTodo(id string, updatedFields models.TodoInput) (models.Todo, error)
+	UpdateTodo(id string, todoUpdates models.UpdateTodoRequest) error
 }
 
 type TodoService struct {
@@ -38,18 +41,46 @@ func (ts *TodoService) GetTodo(id string) (models.Todo, error) {
 	return todo, nil
 }
 
-func (ts *TodoService) UpdateTodo(id string, updatedFields models.TodoInput) (models.Todo, error) {
+func (ts *TodoService) UpdateTodo(id string, todoUpdates models.UpdateTodoRequest) error {
+	var completionDate time.Time
+
 	todo, err := ts.todoRepo.Get(id)
 	if err != nil {
-		return models.Todo{}, err
+		return err
 	}
 
-	// values := reflect.ValueOf(todo)
-	// types := values.Type()
-	// for i := 0; i < values.NumField(); i++ {
-	// 	todo[types.Field(i).Name]
-	// 	fmt.Println(types.Field(i).Index[0], types.Field(i).Name, values.Field(i))
-	// }
+	todoValue := reflect.ValueOf(&todo).Elem()
+	todoUpdatesType := reflect.TypeOf(todoUpdates)
+	todoUpdatesValue := reflect.ValueOf(todoUpdates)
 
-	return todo, nil
+	if todoUpdates.IsComplete != nil && *todoUpdates.IsComplete && !todo.IsComplete {
+
+		completionDate = time.Now()
+	}
+
+	if todo.IsComplete != *todoUpdates.IsComplete {
+		//ASK: This is being assigned on heap is there any way to avoid it.
+		todo.CompletionDate = &completionDate
+	}
+
+	for i := 0; i < todoUpdatesType.NumField(); i++ {
+		fieldValue := todoUpdatesValue.Field(i)
+		if fieldValue.Type().Kind() == reflect.Ptr && fieldValue.IsNil() {
+			continue
+		}
+
+		fieldToUpdate := todoUpdatesType.Field(i).Name
+		field := todoValue.FieldByName(fieldToUpdate)
+
+		if !field.IsValid() {
+			return fmt.Errorf("not a field name: %s", fieldToUpdate)
+		}
+
+		if !field.CanSet() {
+			return fmt.Errorf("cannot set field %s", fieldToUpdate)
+		}
+		field.Set(fieldValue.Elem())
+	}
+
+	return ts.todoRepo.Update(id, todo)
 }
