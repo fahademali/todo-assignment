@@ -18,7 +18,7 @@ func AddRoutes(tr *gin.Engine, todoHandlers handlers.ITodoHandlers, listHandlers
 
 	tr.GET("/todos/:id", todoHandlers.HandleGetTodo)
 
-	tr.POST("/todos", todoHandlers.HandleCreateTodo)
+	tr.POST("/lists/:listID/todos", todoHandlers.HandleCreateTodo)
 
 	tr.DELETE("/todos/:id", todoHandlers.HandleDeleteTodo)
 

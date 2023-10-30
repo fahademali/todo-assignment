@@ -9,6 +9,8 @@ type Todo struct {
 	DueDate        time.Time  `db:"due_date"`
 	IsComplete     bool       `db:"is_complete"`
 	CompletionDate *time.Time `db:"completion_date"`
+	CreationTime   *time.Time `db:"creation_time"`
+	ListID         int        `db:"list_id"`
 }
 
 type TodoInput struct {
@@ -23,12 +25,4 @@ type UpdateTodoRequest struct {
 	Description *string    `json:"description,omitempty"`
 	DueDate     *time.Time `json:"dueDate,omitempty"`
 	IsComplete  *bool      `json:"isComplete,omitempty"`
-}
-
-type UpdateListRequest struct {
-	Name string `json:"name" binding:"required"`
-}
-
-type CreateListRequest struct {
-	Name string `json:"name" binding:"required"`
 }

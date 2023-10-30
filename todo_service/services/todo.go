@@ -9,7 +9,7 @@ import (
 )
 
 type ITodoService interface {
-	CreateTodo(listID string, requestBody models.TodoInput) error
+	CreateTodo(listID int, requestBody models.TodoInput) error
 	DeleteTodo(id string) error
 	GetTodo(id string) (models.Todo, error)
 	UpdateTodo(id string, todoUpdates models.UpdateTodoRequest) error
@@ -23,8 +23,8 @@ func NewTodoService(todoRepo repo.ITodoRepo) ITodoService {
 	return &TodoService{todoRepo: todoRepo}
 }
 
-func (ts *TodoService) CreateTodo(listID string, requestBody models.TodoInput) error {
-	err := ts.todoRepo.Insert(requestBody.Title, requestBody.Description, requestBody.DueDate)
+func (ts *TodoService) CreateTodo(listID int, requestBody models.TodoInput) error {
+	err := ts.todoRepo.Insert(requestBody.Title, requestBody.Description, requestBody.DueDate, listID)
 	return err
 }
 

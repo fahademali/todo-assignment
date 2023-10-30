@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 	"user_service/log"
 
 	"github.com/gin-gonic/gin"
@@ -34,8 +35,14 @@ func (th *TodoHandlers) Ping(ctx *gin.Context) {
 }
 
 func (th *TodoHandlers) HandleCreateTodo(ctx *gin.Context) {
-	listID := ctx.Param(":listID")
 	var requestBody models.TodoInput
+	listIDStr := ctx.Param("listID")
+	listID, err := strconv.Atoi(listIDStr)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(err.Error()))
+		return
+	}
 
 	if err := ctx.ShouldBindJSON(&requestBody); err != nil {
 		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(err.Error()))

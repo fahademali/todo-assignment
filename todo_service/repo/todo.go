@@ -8,7 +8,7 @@ import (
 )
 
 type ITodoRepo interface {
-	Insert(title string, description string, dueDate time.Time) error
+	Insert(title string, description string, dueDate time.Time, listID int) error
 	Delete(id string) error
 	Get(id string) (models.Todo, error)
 	Update(id string, updatedTodo models.Todo) error
@@ -22,8 +22,8 @@ func NewTodoRepo(db *sql.DB) ITodoRepo {
 	return &TodoRepo{db: db}
 }
 
-func (tr *TodoRepo) Insert(title string, description string, dueDate time.Time) error {
-	if _, err := tr.db.Exec("INSERT INTO todos (title, description, due_date) VALUES ($1, $2, $3)", title, description, dueDate); err != nil {
+func (tr *TodoRepo) Insert(title string, description string, dueDate time.Time, listID int) error {
+	if _, err := tr.db.Exec("INSERT INTO todos (title, description, due_date, list_id) VALUES ($1, $2, $3, $4)", title, description, dueDate, listID); err != nil {
 		return fmt.Errorf("Insert: %v", err)
 	}
 	return nil
