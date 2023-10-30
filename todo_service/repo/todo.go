@@ -8,7 +8,6 @@ import (
 )
 
 type ITodoRepo interface {
-	InsertList(name string) error
 	Insert(title string, description string, dueDate time.Time) error
 	Delete(id string) error
 	Get(id string) (models.Todo, error)
@@ -21,13 +20,6 @@ type TodoRepo struct {
 
 func NewTodoRepo(db *sql.DB) ITodoRepo {
 	return &TodoRepo{db: db}
-}
-
-func (tr *TodoRepo) InsertList(name string) error {
-	if _, err := tr.db.Exec("INSERT INTO list (name) VALUES ($1)", name); err != nil {
-		return fmt.Errorf("InsertList: %v", err)
-	}
-	return nil
 }
 
 func (tr *TodoRepo) Insert(title string, description string, dueDate time.Time) error {
@@ -50,7 +42,7 @@ func (tr *TodoRepo) Get(id string) (models.Todo, error) {
 	switch {
 	case err == sql.ErrNoRows:
 		// ASK: is this right way to make an empty struct to by pass compiler screaming
-		return models.Todo{}, fmt.Errorf("no user with id %s", id)
+		return models.Todo{}, fmt.Errorf("no todo with id %s", id)
 	case err != nil:
 		return models.Todo{}, fmt.Errorf("query error: %v", err)
 	default:

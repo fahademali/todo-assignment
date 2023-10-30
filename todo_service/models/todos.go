@@ -15,7 +15,7 @@ type TodoInput struct {
 	Title       string    `json:"title" binding:"required"`
 	Description string    `json:"description" binding:"required"`
 	DueDate     time.Time `json:"dueDate"  binding:"required"`
-	IsComplete  bool      `json:"isComplete"  binding:"required"`
+	IsComplete  bool      `json:"isComplete"`
 }
 
 type UpdateTodoRequest struct {
@@ -23,6 +23,10 @@ type UpdateTodoRequest struct {
 	Description *string    `json:"description,omitempty"`
 	DueDate     *time.Time `json:"dueDate,omitempty"`
 	IsComplete  *bool      `json:"isComplete,omitempty"`
+}
+
+type UpdateListRequest struct {
+	Name string `json:"name" binding:"required"`
 }
 
 type CreateListRequest struct {

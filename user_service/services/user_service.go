@@ -97,7 +97,7 @@ func (u *UserService) VerifyUser(email string) error {
 
 	user.IsVerified = true
 	log.GetLog().Info(user)
-	return u.userRepo.UpdateByEmail(email, user)
+	return u.userRepo.Update(user)
 }
 
 func (u *UserService) GrantAdminRole(email string) error {

@@ -13,10 +13,6 @@ import (
 )
 
 func main() {
-	r := gin.Default()
-
-	db := infra.DbConnection()
-
 	var userRepo repo.IUserRepo
 	var emailService services.IEmailService
 	var tokenService services.ITokenService
@@ -24,6 +20,10 @@ func main() {
 	var userService services.IUserService
 	var userHandlers handlers.IUserHandlers
 	var userMiddleware middlewares.IUserMiddleware
+
+	r := gin.Default()
+
+	db := infra.DbConnection()
 
 	userRepo = repo.NewUserRepo(db)
 

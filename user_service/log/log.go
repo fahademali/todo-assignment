@@ -3,17 +3,17 @@ package log
 import (
 	"os"
 
-	logorus "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
-var log *logorus.Logger
+var log *logrus.Logger
 
 func init() {
-	log = logorus.New()
-	// log.SetFormatter(&logorus.JSONFormatter{})
+	log = logrus.New()
+	// log.SetFormatter(&logrus.JSONFormatter{})
 	log.Out = os.Stdout
 }
 
-func GetLog() *logorus.Logger {
+func GetLog() *logrus.Logger {
 	return log
 }
