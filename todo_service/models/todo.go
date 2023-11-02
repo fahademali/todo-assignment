@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type Todo struct {
 	ID             int        `db:"id"`
@@ -16,13 +18,22 @@ type Todo struct {
 type TodoInput struct {
 	Title       string    `json:"title" binding:"required"`
 	Description string    `json:"description" binding:"required"`
-	DueDate     time.Time `json:"dueDate"  binding:"required"`
-	IsComplete  bool      `json:"isComplete"`
+	DueDate     time.Time `json:"dueDate" binding:"required"`
+	IsComplete  *bool     `json:"isComplete" binding:"required"`
 }
 
 type UpdateTodoRequest struct {
-	Title       *string    `json:"title,omitempty"`
-	Description *string    `json:"description,omitempty"`
-	DueDate     *time.Time `json:"dueDate,omitempty"`
-	IsComplete  *bool      `json:"isComplete,omitempty"`
+	Title          *string    `json:"title" binding:"required"`
+	Description    *string    `json:"description" binding:"required"`
+	DueDate        *time.Time `json:"dueDate" binding:"required"`
+	IsComplete     *bool      `json:"isComplete" binding:"required"`
+	CompletionDate time.Time
+}
+
+type UserInfo struct {
+	ID         int64
+	Email      string
+	Role       string
+	IsVerified bool
+	ValidFrom  float64
 }

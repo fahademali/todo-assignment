@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 	httpResponse "todo_service/http"
 	"todo_service/models"
 	"todo_service/services"
@@ -12,8 +13,7 @@ import (
 type IListHandlers interface {
 	HandleCreateList(ctx *gin.Context)
 	HandleDeleteList(ctx *gin.Context)
-	// ASK: shoudl i keep it ListName in below or should i remove list reason of keeping is updaing also means adding a todo.
-	HandleUpdateListName(ctx *gin.Context)
+	HandleUpdateList(ctx *gin.Context)
 }
 
 type ListHandlers struct {
@@ -26,13 +26,14 @@ func NewListHandlers(listService services.IListService) IListHandlers {
 
 func (lh *ListHandlers) HandleCreateList(ctx *gin.Context) {
 	var requestBody models.CreateListRequest
+	user := ctx.MustGet("user").(models.UserInfo)
 
 	if err := ctx.ShouldBindJSON(&requestBody); err != nil {
 		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(err.Error()))
 		return
 	}
 
-	if err := lh.listService.CreateList(requestBody); err != nil {
+	if err := lh.listService.CreateList(requestBody, user.ID); err != nil {
 		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(err.Error()))
 		return
 	}
@@ -41,9 +42,17 @@ func (lh *ListHandlers) HandleCreateList(ctx *gin.Context) {
 }
 
 func (lh *ListHandlers) HandleDeleteList(ctx *gin.Context) {
-	listID := ctx.Param("listID")
+	user := ctx.MustGet("user").(models.UserInfo)
+	listIDStr := ctx.Param("list_id")
+	listID, err := strconv.ParseInt(listIDStr, 10, 64)
 
-	if err := lh.listService.DeleteList(listID); err != nil {
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(err.Error()))
+		return
+	}
+
+	//TODO: implemente with CASCADE
+	if err := lh.listService.DeleteList(listID, ctx, user.ID); err != nil {
 		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(err.Error()))
 		return
 	}
@@ -51,16 +60,23 @@ func (lh *ListHandlers) HandleDeleteList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, httpResponse.GetSuccessResponse("list has been deleted"))
 }
 
-func (lh *ListHandlers) HandleUpdateListName(ctx *gin.Context) {
+func (lh *ListHandlers) HandleUpdateList(ctx *gin.Context) {
 	var requestBody models.UpdateListRequest
-	listID := ctx.Param("listID")
+	user := ctx.MustGet("user").(models.UserInfo)
+
+	listIDStr := ctx.Param("list_id")
+	listID, err := strconv.ParseInt(listIDStr, 10, 64)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(err.Error()))
+		return
+	}
 
 	if err := ctx.ShouldBindJSON(&requestBody); err != nil {
 		ctx.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
-	if err := lh.listService.UpdateList(listID, requestBody.Name); err != nil {
+	if err := lh.listService.UpdateList(listID, user.ID, requestBody); err != nil {
 		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(err.Error()))
 		return
 	}

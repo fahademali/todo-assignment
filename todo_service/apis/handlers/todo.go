@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"user_service/log"
@@ -17,6 +18,7 @@ type ITodoHandlers interface {
 	HandleCreateTodo(ctx *gin.Context)
 	HandleDeleteTodo(ctx *gin.Context)
 	HandleGetTodo(ctx *gin.Context)
+	HandleGetTodosByListID(ctx *gin.Context)
 	HandleUpdateTodo(ctx *gin.Context)
 }
 
@@ -36,11 +38,13 @@ func (th *TodoHandlers) Ping(ctx *gin.Context) {
 
 func (th *TodoHandlers) HandleCreateTodo(ctx *gin.Context) {
 	var requestBody models.TodoInput
-	listIDStr := ctx.Param("listID")
-	listID, err := strconv.Atoi(listIDStr)
+	user := ctx.MustGet("user").(models.UserInfo)
 
+	listIDStr := ctx.Param("list_id")
+	listID, err := strconv.ParseInt(listIDStr, 10, 64)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(err.Error()))
+		customError := fmt.Sprintf("error generated in HandleCreateTodo %v", err)
+		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(customError))
 		return
 	}
 
@@ -49,7 +53,7 @@ func (th *TodoHandlers) HandleCreateTodo(ctx *gin.Context) {
 		return
 	}
 
-	if err := th.todoService.CreateTodo(listID, requestBody); err != nil {
+	if err := th.todoService.CreateTodo(listID, user.ID, requestBody); err != nil {
 		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(err.Error()))
 		return
 	}
@@ -58,9 +62,17 @@ func (th *TodoHandlers) HandleCreateTodo(ctx *gin.Context) {
 }
 
 func (th *TodoHandlers) HandleDeleteTodo(ctx *gin.Context) {
-	todoID := ctx.Param("id")
-	//TODO: should i keep todoId as a string
-	if err := th.todoService.DeleteTodo(todoID); err != nil {
+	user := ctx.MustGet("user").(models.UserInfo)
+
+	todoIDStr := ctx.Param("todo_id")
+	todoID, err := strconv.ParseInt(todoIDStr, 10, 64)
+	if err != nil {
+		customError := fmt.Sprintf("error generated in HandleDeleteTodo %v", err)
+		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(customError))
+		return
+	}
+
+	if err := th.todoService.DeleteTodo(todoID, user.ID); err != nil {
 		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(err.Error()))
 		return
 	}
@@ -69,9 +81,17 @@ func (th *TodoHandlers) HandleDeleteTodo(ctx *gin.Context) {
 }
 
 func (th *TodoHandlers) HandleGetTodo(ctx *gin.Context) {
-	todoID := ctx.Param("id")
-	//TODO: should i keep todoId as a string
-	todo, err := th.todoService.GetTodo(todoID)
+	user := ctx.MustGet("user").(models.UserInfo)
+
+	todoIDStr := ctx.Param("todo_id")
+	todoID, err := strconv.ParseInt(todoIDStr, 10, 64)
+	if err != nil {
+		customError := fmt.Sprintf("error generated in HandleGetTodo %v", err)
+		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(customError))
+		return
+	}
+
+	todo, err := th.todoService.GetTodo(todoID, user.ID)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(err.Error()))
 		return
@@ -80,20 +100,65 @@ func (th *TodoHandlers) HandleGetTodo(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, httpResponse.GetSuccessResponse(todo))
 }
 
-func (th *TodoHandlers) HandleUpdateTodo(ctx *gin.Context) {
-	//TODO: should i keep todoId as a string
-	var requestBody models.UpdateTodoRequest
+func (th *TodoHandlers) HandleGetTodosByListID(ctx *gin.Context) {
+	user := ctx.MustGet("user").(models.UserInfo)
+	listIDStr := ctx.Param("list_id")
+	limitStr := ctx.DefaultQuery("limit", "10")
+	cursorStr := ctx.Query("cursor")
 
-	todoID := ctx.Param("id")
+	listID, err := strconv.ParseInt(listIDStr, 10, 64)
+	if err != nil {
+		customError := fmt.Sprintf("error generated in HandleGetTodosByListID %v", err)
+		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(customError))
+	}
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil && limitStr != "" {
+		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse("limit parameter is invalid"))
+		return
+	}
+	if limit == 0 {
+		limit = 10
+	}
+
+	cursor, err := strconv.ParseInt(cursorStr, 10, 64)
+	if err != nil && cursorStr != "" {
+		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse("cursor parameter is invalid"))
+		return
+	}
+	if cursor == 0 {
+		cursor = models.MAX_ID_DB_VALUE
+	}
+
+	todos, err := th.todoService.GetTodosByListID(listID, user.ID, limit, cursor)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, httpResponse.GetSuccessResponse(todos))
+
+}
+
+func (th *TodoHandlers) HandleUpdateTodo(ctx *gin.Context) {
+	var requestBody models.UpdateTodoRequest
+	user := ctx.MustGet("user").(models.UserInfo)
+
+	todoIDStr := ctx.Param("todo_id")
+	todoID, err := strconv.ParseInt(todoIDStr, 10, 64)
+	if err != nil {
+		customError := fmt.Sprintf("error generated in HandleCreateTodo %v", err)
+		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(customError))
+		return
+	}
 
 	if err := ctx.ShouldBindJSON(&requestBody); err != nil {
-		// errorResponse := httpResponse.GetErrorResponse(err.Error())
-		ctx.JSON(http.StatusBadRequest, err.Error())
+		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(err.Error()))
 		return
 	}
 	log.GetLog().Info(requestBody)
 
-	err := th.todoService.UpdateTodo(todoID, requestBody)
+	err = th.todoService.UpdateTodo(todoID, user.ID, requestBody)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(err.Error()))
 		return
