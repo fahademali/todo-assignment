@@ -4,15 +4,16 @@ import (
 	"context"
 	"fmt"
 	"user_service/config"
+	"user_service/log"
 	"user_service/models"
 	"user_service/repo"
 )
 
 type IUserService interface {
-	Login(rb models.LoginRequest) (string, error)
-	Signup(rb models.SignupRequest) (string, error)
-	SignupTx(ctx context.Context, rb models.SignupRequest) error
-	VerifyUser(uid string) error
+	Login(requestBody models.LoginRequest) (string, error)
+	Signup(ctx context.Context, requestBody models.SignupRequest) error
+	VerifyUser(email string) error
+	GrantAdminRole(email string) error
 }
 
 type UserService struct {
@@ -26,55 +27,18 @@ func NewUserService(userRepo repo.IUserRepo, cryptService ICryptService, tokenSe
 	return &UserService{userRepo: userRepo, cryptService: cryptService, tokenService: tokenService, emailService: emailService}
 }
 
-func (u *UserService) Login(rb models.LoginRequest) (string, error) {
-	user, err := u.userRepo.GetByEmail(rb.Email)
+func (u *UserService) Login(requestBody models.LoginRequest) (string, error) {
+	user, err := u.userRepo.GetByEmail(requestBody.Email)
 	if err != nil {
 		return "", err
 	}
 
-	err = u.cryptService.ComparePasswords(user.Password, rb.Password)
+	err = u.cryptService.ComparePasswords(user.Password, requestBody.Password)
 	if err != nil {
 		return "", err
 	}
 
-	token, err := u.tokenService.GenerateAccessToken(rb.Email)
-	if err != nil {
-		return "", err
-	}
-
-	return token, nil
-}
-
-func (u *UserService) Signup(rb models.SignupRequest) (string, error) {
-	hashedPassword, err := u.cryptService.GenerateHashPassword(rb.Password)
-	if err != nil {
-		return "", err
-	}
-
-	rb.Password = hashedPassword
-
-	err = u.userRepo.Insert(rb)
-	if err != nil {
-		return "", err
-	}
-
-	token, err := u.tokenService.GenerateAccessToken(rb.Email)
-	if err != nil {
-		return "", err
-	}
-
-	verificationLink := fmt.Sprintf("%s/verify-user/%s", config.AppConfig.BASE_URL, token)
-	emailBody := `
-	<html>
-		<body>
-			<p>Hello!</p>
-			<p>Click the following link to verify your email address:</p>
-			<p><a href="` + verificationLink + `">Verify Email Address</a></p>
-		</body>
-	</html>
-	`
-
-	err = u.emailService.SendEmail(rb.Email, "Verfify Email Address", emailBody)
+	token, err := u.tokenService.GenerateAccessToken(user.Email, user.Role, user.IsVerified)
 	if err != nil {
 		return "", err
 	}
@@ -82,13 +46,13 @@ func (u *UserService) Signup(rb models.SignupRequest) (string, error) {
 	return token, nil
 }
 
-func (u *UserService) SignupTx(ctx context.Context, rb models.SignupRequest) error {
-	hashedPassword, err := u.cryptService.GenerateHashPassword(rb.Password)
+func (u *UserService) Signup(ctx context.Context, requestBody models.SignupRequest) error {
+	hashedPassword, err := u.cryptService.GenerateHashPassword(requestBody.Password)
 	if err != nil {
 		return err
 	}
 
-	rb.Password = hashedPassword
+	requestBody.Password = hashedPassword
 
 	tx, err := u.userRepo.ExecTx(ctx)
 	if err != nil {
@@ -97,12 +61,12 @@ func (u *UserService) SignupTx(ctx context.Context, rb models.SignupRequest) err
 	// Defer a rollback in case anything fails.
 	defer tx.Rollback()
 
-	err = u.userRepo.InsertTx(ctx, tx, rb)
+	err = u.userRepo.Insert(ctx, tx, requestBody)
 	if err != nil {
 		return fmt.Errorf("SignupTx: %v", err)
 	}
 
-	token, err := u.tokenService.GenerateAccessToken(rb.Email)
+	token, err := u.tokenService.GenerateAccessToken(requestBody.Email, "user", false)
 	if err != nil {
 		return err
 	}
@@ -118,20 +82,28 @@ func (u *UserService) SignupTx(ctx context.Context, rb models.SignupRequest) err
 	</html>
 	`
 
-	err = u.emailService.SendEmailTx(rb.Email, "Verfify Email Address", emailBody)
+	err = u.emailService.SendEmail(requestBody.Email, "Verfify Email Address", emailBody)
 	if err != nil {
 		return err
 	}
 	return tx.Commit()
 }
 
-func (u *UserService) VerifyUser(uid string) error {
-	user, err := u.userRepo.GetByEmail(uid)
+func (u *UserService) VerifyUser(email string) error {
+	user, err := u.userRepo.GetByEmail(email)
 	if err != nil {
 		return err
 	}
 
 	user.IsVerified = true
+	log.GetLog().Info(user)
+	return u.userRepo.Update(user)
+}
 
-	return u.userRepo.UpdateByEmail(uid, user)
+func (u *UserService) GrantAdminRole(email string) error {
+	err := u.userRepo.SetAdminRole(email)
+	if err != nil {
+		return err
+	}
+	return nil
 }

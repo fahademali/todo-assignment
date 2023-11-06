@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS file (
+    id SERIAL PRIMARY KEY,
+    file_name VARCHAR(100) NOT NULL,
+    file_path VARCHAR(100) NOT NULL,
+    upload_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    todo_id INTEGER REFERENCES todos(id)
+)

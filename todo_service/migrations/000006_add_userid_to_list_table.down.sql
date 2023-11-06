@@ -1,0 +1,2 @@
+ALTER TABLE list
+DROP COLUMN IF EXISTS user_id;

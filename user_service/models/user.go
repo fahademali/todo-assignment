@@ -14,6 +14,10 @@ type SignupRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type AdminPromotionRequest struct {
+	Email string `json:"email" binding:"required"`
+}
+
 type User struct {
 	ID         int    `db:"id"`
 	Username   string `db:"username"`
@@ -21,4 +25,11 @@ type User struct {
 	Password   string `db:"password"`
 	Role       string `db:"role"`
 	IsVerified bool   `db:"is_verified"`
+}
+
+type UserInfo struct {
+	Email      string  `json:"email"`
+	Role       string  `json:"role"`
+	IsVerified bool    `json:"isVerified"`
+	Nbf        float64 `json:"nbf"`
 }

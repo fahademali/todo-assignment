@@ -2,13 +2,14 @@ package routes
 
 import (
 	"net/http"
+	"user_service/middlewares"
 
 	"github.com/gin-gonic/gin"
 
 	"user_service/apis/handlers"
 )
 
-func AddUserRoutes(ur *gin.Engine, handlers handlers.IUserHandlers) {
+func AddUserRoutes(ur *gin.Engine, handlers handlers.IUserHandlers, middleware middlewares.IUserMiddleware) {
 	ur.GET("/ping", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{
 			"message": "pong",
@@ -23,9 +24,9 @@ func AddUserRoutes(ur *gin.Engine, handlers handlers.IUserHandlers) {
 
 	ur.POST("/signup", handlers.HandleSignup)
 
-	ur.POST("/signuptx", handlers.HandleSignupTx)
-
 	ur.POST("/refresh-token", handlers.HandleRefreshToken)
 
 	ur.POST("/forget-password", handlers.HandleForgetPassword)
+
+	ur.PATCH("/grant-admin-role", middleware.Authorize, handlers.HandleGrantAdminRole)
 }
