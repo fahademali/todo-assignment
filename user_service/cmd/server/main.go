@@ -2,8 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"time"
+	"worker/utils"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/cadence/.gen/go/cadence/workflowserviceclient"
@@ -20,11 +19,12 @@ import (
 	"user_service/services"
 )
 
-var HostPort = "127.0.0.1:7933"
-var Domain = "test-domain"
-var TaskListName = "test-list"
-var ClientName = "test-client"
-var CadenceService = "cadence-frontend"
+// var HostPort = "127.0.0.1:7933"
+// var Domain = "test-domain"
+// var TaskListName = "test-list"
+
+// var ClientName = "test-client"
+// var CadenceService = "cadence-frontend"
 
 func main() {
 	var userRepo repo.IUserRepo
@@ -34,21 +34,13 @@ func main() {
 	var userService services.IUserService
 	var userHandlers handlers.IUserHandlers
 	var userMiddleware middlewares.IUserMiddleware
+	var dailyMidnightUTC = "0 0 * * *"
 
 	ctx := context.Background()
-	cadenceClient := client.NewClient(buildCadenceClient(), Domain, &client.Options{})
+	cadenceClient := client.NewClient(buildCadenceClient(), config.AppConfig.CADENCE_DOMAIN, &client.Options{})
+	startWorkflowOptions := utils.GetDefaultStartWorkflowOptions(dailyMidnightUTC)
 
-	fmt.Println("cadenceClient ...................")
-	fmt.Println(cadenceClient)
-
-	cadenceClient.StartWorkflow(ctx,
-		client.StartWorkflowOptions{
-			TaskList:                     TaskListName,
-			ExecutionStartToCloseTimeout: 10 * time.Second,
-			CronSchedule:                 "*/2 * * * *",
-		},
-		"main.SimpleWorkFlow",
-	)
+	cadenceClient.StartWorkflow(ctx, startWorkflowOptions, "worker/workflows.RemindUsersForDueDateWorkflow")
 
 	r := gin.Default()
 
@@ -71,19 +63,19 @@ func main() {
 }
 
 func buildCadenceClient() workflowserviceclient.Interface {
-	ch, err := tchannel.NewChannelTransport(tchannel.ServiceName(ClientName))
+	ch, err := tchannel.NewChannelTransport(tchannel.ServiceName(config.AppConfig.CADENCE_CLIENT_NAME))
 	if err != nil {
 		panic("Failed to setup tchannel")
 	}
 	dispatcher := yarpc.NewDispatcher(yarpc.Config{
-		Name: ClientName,
+		Name: config.AppConfig.CADENCE_CLIENT_NAME,
 		Outbounds: yarpc.Outbounds{
-			CadenceService: {Unary: ch.NewSingleOutbound(HostPort)},
+			config.AppConfig.CADENCE_SERVICE: {Unary: ch.NewSingleOutbound(config.AppConfig.CADENCE_HOST_PORT)},
 		},
 	})
 	if err := dispatcher.Start(); err != nil {
 		panic("Failed to start dispatcher")
 	}
 
-	return workflowserviceclient.New(dispatcher.ClientConfig(CadenceService))
+	return workflowserviceclient.New(dispatcher.ClientConfig(config.AppConfig.CADENCE_SERVICE))
 }

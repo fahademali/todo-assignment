@@ -18,7 +18,7 @@ type IUserHandlers interface {
 	HandleSignup(ctx *gin.Context)
 	HandleRefreshToken(ctx *gin.Context)
 	HandleForgetPassword(ctx *gin.Context)
-	HandleSendEmail(ctx *gin.Context)
+	HandleSendEmails(ctx *gin.Context)
 	HandleVerifyUser(ctx *gin.Context)
 	HandleGrantAdminRole(ctx *gin.Context)
 }
@@ -115,32 +115,23 @@ func (uh *UserHandlers) HandleForgetPassword(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, successResponse)
 }
 
-func (uh *UserHandlers) HandleSendEmail(ctx *gin.Context) {
-	var requestBody models.SendEmailRequest
+func (uh *UserHandlers) HandleSendEmails(ctx *gin.Context) {
+	var requestBody models.SendEmailsRequest
 
 	if err := ctx.ShouldBindJSON(&requestBody); err != nil {
 		errorResponse := httpResponse.GetErrorResponse(err.Error())
 		ctx.JSON(http.StatusBadRequest, errorResponse)
 		return
 	}
-	subject := `[Important] Todo Due Today`
-	emailBody := `
-	<html>
-		<body>
-			<p>Hello!</p>
-			<p>You have pending todos which are due today open your app and get it down. No More procrastination</p>
-		</body>
-	</html>
-	`
 
-	err := uh.emailService.SendEmailToAll(requestBody.UserEmailAddresses, subject, emailBody)
+	err := uh.emailService.SendEmailToAll(requestBody.UserEmailAddresses, requestBody.Subject, requestBody.Body)
 	if err != nil {
 		errorResponse := httpResponse.GetErrorResponse(err.Error())
 		ctx.JSON(http.StatusBadRequest, errorResponse)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, httpResponse.GetSuccessResponse("email sent"))
+	ctx.JSON(http.StatusOK, httpResponse.GetSuccessResponse("emails have been sent to everybody"))
 }
 
 func (uh *UserHandlers) HandleVerifyUser(ctx *gin.Context) {

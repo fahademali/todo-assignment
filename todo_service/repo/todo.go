@@ -105,7 +105,7 @@ func (tr *TodoRepo) GetForUser(id int64, userID int64) (models.Todo, error) {
 
 func (tr *TodoRepo) GetByDate(dueDate string) ([]int64, error) {
 	var userIDCollection []int64
-	rows, err := tr.db.Query(`select l.user_id from todos t 
+	rows, err := tr.db.Query(`select DISTINCT l.user_id from todos t 
 	INNER JOIN list l ON l.id=t.list_id 
 	WHERE date_trunc('day',t.due_date) = $1`, dueDate)
 
@@ -129,7 +129,7 @@ func (tr *TodoRepo) GetByDate(dueDate string) ([]int64, error) {
 	}
 
 	if len(userIDCollection) == 0 {
-		return nil, fmt.Errorf("no users found with task due today")
+		return nil, fmt.Errorf("no users found with task due %s", dueDate)
 	}
 	return userIDCollection, nil
 }

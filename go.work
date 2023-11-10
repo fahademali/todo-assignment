@@ -2,3 +2,4 @@ go 1.21.3
 
 use ./user_service 
 use ./todo_service
+use ./worker

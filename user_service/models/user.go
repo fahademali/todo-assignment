@@ -14,8 +14,10 @@ type SignupRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
-type SendEmailRequest struct {
+type SendEmailsRequest struct {
 	UserEmailAddresses []string `json:"userEmailAddresses" binding:"required"`
+	Subject            string   `json:"subject" binding:"required"`
+	Body               string   `json:"body" binding:"required"`
 }
 
 type GetUserEmailsByIdsRequest struct {

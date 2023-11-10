@@ -38,5 +38,13 @@ func (es *EmailService) SendEmail(receiverEmail string, subject string, body str
 }
 
 func (es *EmailService) SendEmailToAll(receiverEmails []string, subject string, body string) error {
-	return nil
+	emailMsg := gomail.NewMessage()
+	emailMsg.SetHeader("From", es.senderEmail)
+	emailMsg.SetHeader("To", receiverEmails...)
+	emailMsg.SetHeader("Subject", subject)
+	emailMsg.SetBody("text/html", body)
+
+	dialer := gomail.NewDialer(es.senderSmtpServer, es.senderSmtpPort, es.senderEmail, es.senderAppPass)
+
+	return dialer.DialAndSend(emailMsg)
 }

@@ -10,9 +10,9 @@ import (
 func AddRoutes(tr *gin.Engine, middleware middlewares.ITodoMiddleware, todoHandlers handlers.ITodoHandlers, listHandlers handlers.IListHandlers, fileHandlers handlers.IFileHandlers) {
 	tr.GET("/ping", todoHandlers.Ping)
 
-	tr.GET("/lists/:list_id/todos", middleware.Authenticate, todoHandlers.HandleGetTodosByListID)
+	tr.GET("/internal/todos", todoHandlers.HandleGetTodosByDate)
 
-	tr.GET("/admin/todos", todoHandlers.HandleGetTodosByDate)
+	tr.GET("/lists/:list_id/todos", middleware.Authenticate, todoHandlers.HandleGetTodosByListID)
 
 	tr.GET("/lists/:list_id/todos/:todo_id", middleware.Authenticate, todoHandlers.HandleGetTodo)
 
