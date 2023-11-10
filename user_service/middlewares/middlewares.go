@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"strings"
 	httpResponse "user_service/http"
+	"user_service/models"
 
 	"github.com/gin-gonic/gin"
 
-	"user_service/log"
 	"user_service/services"
 )
 
@@ -26,19 +26,33 @@ func NewUserMiddlewares(tokenService services.ITokenService) IUserMiddleware {
 }
 
 func (um *UserMiddleware) Authorize(ctx *gin.Context) {
-	log.GetLog().Info("middleware .............")
-	token := strings.Split(ctx.Request.Header["Authorization"][0], " ")[1]
+	accessTokenHeader := ctx.Request.Header.Get("Authorization")
+
+	if accessTokenHeader == "" {
+		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse("Authorization Header is missing"))
+		ctx.Abort()
+		return
+	}
+
+	accessTokenParts := strings.Split(accessTokenHeader, " ")
+
+	if len(accessTokenParts) != 2 || accessTokenParts[0] != "Bearer" {
+		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse("Invalid or missing token"))
+		ctx.Abort()
+		return
+	}
+
+	token := accessTokenParts[1]
 	user, err := um.tokenService.GetInfoFromToken(token)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(err.Error()))
 		ctx.Abort()
 		return
 	}
-	log.GetLog().Info(user)
-	if user.Role != "admin" {
+
+	if user.Role != models.ADMIN {
 		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse("Admin Permissions required!!!!!"))
 		ctx.Abort()
 		return
 	}
-	log.GetLog().Info(user)
 }

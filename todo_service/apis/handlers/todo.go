@@ -18,6 +18,7 @@ type ITodoHandlers interface {
 	HandleCreateTodo(ctx *gin.Context)
 	HandleDeleteTodo(ctx *gin.Context)
 	HandleGetTodo(ctx *gin.Context)
+	HandleGetTodosByDate(ctx *gin.Context)
 	HandleGetTodosByListID(ctx *gin.Context)
 	HandleUpdateTodo(ctx *gin.Context)
 }
@@ -98,6 +99,19 @@ func (th *TodoHandlers) HandleGetTodo(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, httpResponse.GetSuccessResponse(todo))
+}
+
+func (th *TodoHandlers) HandleGetTodosByDate(ctx *gin.Context) {
+	dueDate := ctx.Query("due_date")
+
+	log.GetLog().Warn(dueDate)
+	todos, err := th.todoService.GetTodosByDate(dueDate)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, httpResponse.GetSuccessResponse(todos))
 }
 
 func (th *TodoHandlers) HandleGetTodosByListID(ctx *gin.Context) {

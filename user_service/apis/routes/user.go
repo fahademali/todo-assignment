@@ -2,11 +2,11 @@ package routes
 
 import (
 	"net/http"
-	"user_service/middlewares"
 
 	"github.com/gin-gonic/gin"
 
 	"user_service/apis/handlers"
+	"user_service/middlewares"
 )
 
 func AddUserRoutes(ur *gin.Engine, handlers handlers.IUserHandlers, middleware middlewares.IUserMiddleware) {
@@ -27,6 +27,10 @@ func AddUserRoutes(ur *gin.Engine, handlers handlers.IUserHandlers, middleware m
 	ur.POST("/refresh-token", handlers.HandleRefreshToken)
 
 	ur.POST("/forget-password", handlers.HandleForgetPassword)
+
+	ur.POST("/internal/send-email", handlers.HandleSendEmails)
+
+	ur.POST("/internal/users", handlers.HandleGetUserEmailsByIDs)
 
 	ur.PATCH("/grant-admin-role", middleware.Authorize, handlers.HandleGrantAdminRole)
 }
