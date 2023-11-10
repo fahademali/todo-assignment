@@ -12,6 +12,8 @@ func AddRoutes(tr *gin.Engine, middleware middlewares.ITodoMiddleware, todoHandl
 
 	tr.GET("/lists/:list_id/todos", middleware.Authenticate, todoHandlers.HandleGetTodosByListID)
 
+	tr.GET("/admin/todos", todoHandlers.HandleGetTodosByDate)
+
 	tr.GET("/lists/:list_id/todos/:todo_id", middleware.Authenticate, todoHandlers.HandleGetTodo)
 
 	tr.GET("/lists/:list_id/todos/:todo_id/files/:file_id", middleware.Authenticate, fileHandlers.HandleDownloadFile)

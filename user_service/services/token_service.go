@@ -10,7 +10,7 @@ import (
 )
 
 type ITokenService interface {
-	GenerateAccessToken(email string, role string, isVerified bool) (string, error)
+	GenerateAccessToken(user models.User) (string, error)
 	GetEmailFromAccessToken(accessToken string) (string, error)
 	GetInfoFromToken(accessToken string) (models.UserInfo, error)
 }
@@ -23,12 +23,13 @@ func NewTokenService(secretKey string) ITokenService {
 	return &TokenService{secretKey: []byte(secretKey)}
 }
 
-func (ts *TokenService) GenerateAccessToken(email string, role string, isVerified bool) (string, error) {
+func (ts *TokenService) GenerateAccessToken(user models.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"email":      email,
-		"role":       role,
-		"isVerified": isVerified,
-		"nbf":        time.Now().Unix(),
+		"id":         user.ID,
+		"email":      user.Email,
+		"role":       user.Role,
+		"isVerified": user.IsVerified,
+		"validFrom":  time.Now().Unix(),
 	})
 	tokenString, err := token.SignedString(ts.secretKey)
 	if err != nil {
@@ -71,34 +72,36 @@ func (ts *TokenService) GetInfoFromToken(accessToken string) (models.UserInfo, e
 		return models.UserInfo{}, err
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		log.GetLog().Info("claims")
-		log.GetLog().Info(claims)
-		email, ok := claims["email"].(string)
-		if !ok {
-			return models.UserInfo{}, fmt.Errorf("invalid token or missing email claim")
-		}
-		isVerified, ok := claims["isVerified"].(bool)
-		if !ok {
-			return models.UserInfo{}, fmt.Errorf("invalid token or missing isVerified claim")
-		}
-		nbf, ok := claims["nbf"].(float64)
-		if !ok {
-			return models.UserInfo{}, fmt.Errorf("invalid token or missing nbf claim")
-		}
-		role, ok := claims["role"].(string)
-		if !ok {
-			return models.UserInfo{}, fmt.Errorf("invalid token or missing role claim")
-		}
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
+		return models.UserInfo{}, fmt.Errorf("invalid token or missing email claim")
 
-		return models.UserInfo{
-			Email:      email,
-			IsVerified: isVerified,
-			Nbf:        nbf,
-			Role:       role,
-		}, nil
 	}
 
-	return models.UserInfo{}, fmt.Errorf("invalid token or missing email claim")
+	log.GetLog().Info("claims")
+	log.GetLog().Info(claims)
+	email, ok := claims["email"].(string)
+	if !ok {
+		return models.UserInfo{}, fmt.Errorf("invalid token or missing email claim")
+	}
+	isVerified, ok := claims["isVerified"].(bool)
+	if !ok {
+		return models.UserInfo{}, fmt.Errorf("invalid token or missing isVerified claim")
+	}
+	validFrom, ok := claims["validFrom"].(float64)
+	if !ok {
+		return models.UserInfo{}, fmt.Errorf("invalid token or missing validFrom claim")
+	}
+	role, ok := claims["role"].(string)
+	if !ok {
+		return models.UserInfo{}, fmt.Errorf("invalid token or missing role claim")
+	}
+
+	return models.UserInfo{
+		Email:      email,
+		IsVerified: isVerified,
+		ValidFrom:  validFrom,
+		Role:       role,
+	}, nil
 
 }

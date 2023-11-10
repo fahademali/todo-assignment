@@ -10,6 +10,7 @@ type ITodoService interface {
 	CreateTodo(listID int64, userID int64, todoInput models.TodoInput) error
 	DeleteTodo(id int64, userID int64) error
 	GetTodo(id int64, userID int64) (models.Todo, error)
+	GetTodosByDate(dueDate string) ([]int64, error)
 	GetTodosByListID(listID int64, userID int64, limit int, cursor int64) ([]models.Todo, error)
 	UpdateTodo(id int64, userID int64, todoUpdates models.UpdateTodoRequest) error
 }
@@ -39,6 +40,10 @@ func (ts *TodoService) DeleteTodo(id int64, userID int64) error {
 
 func (ts *TodoService) GetTodo(id int64, userID int64) (models.Todo, error) {
 	return ts.todoRepo.GetForUser(id, userID)
+}
+
+func (ts *TodoService) GetTodosByDate(dueDate string) ([]int64, error) {
+	return ts.todoRepo.GetByDate(dueDate)
 }
 
 func (ts *TodoService) GetTodosByListID(listID int64, userID int64, limit int, cursor int64) ([]models.Todo, error) {

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"todo_service/log"
 
 	"github.com/gin-gonic/gin"
 
@@ -12,10 +13,12 @@ import (
 
 type IUserHandlers interface {
 	HandleGetProfile(ctx *gin.Context)
+	HandleGetUserEmailsByIDs(ctx *gin.Context)
 	HandleLogin(ctx *gin.Context)
 	HandleSignup(ctx *gin.Context)
 	HandleRefreshToken(ctx *gin.Context)
 	HandleForgetPassword(ctx *gin.Context)
+	HandleSendEmail(ctx *gin.Context)
 	HandleVerifyUser(ctx *gin.Context)
 	HandleGrantAdminRole(ctx *gin.Context)
 }
@@ -41,6 +44,26 @@ func (uh *UserHandlers) HandleGetProfile(ctx *gin.Context) {
 
 	successResponse := httpResponse.GetSuccessResponse("/getprofile Not Implemented yet")
 	ctx.JSON(http.StatusOK, successResponse)
+}
+
+func (uh *UserHandlers) HandleGetUserEmailsByIDs(ctx *gin.Context) {
+	var requestBody models.GetUserEmailsByIdsRequest
+	log.GetLog().Info("running HandleGetUserEmailsByIDs..........")
+
+	if err := ctx.ShouldBindJSON(&requestBody); err != nil {
+		errorResponse := httpResponse.GetErrorResponse(err.Error())
+		ctx.JSON(http.StatusBadRequest, errorResponse)
+		return
+	}
+
+	userEmails, err := uh.userService.GetUserEmailsByIds(requestBody.UserIDs)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(err.Error()))
+		return
+	}
+
+	log.GetLog().Info(userEmails)
+	ctx.JSON(http.StatusOK, httpResponse.GetSuccessResponse(userEmails))
 }
 
 func (uh *UserHandlers) HandleLogin(ctx *gin.Context) {
@@ -90,6 +113,34 @@ func (uh *UserHandlers) HandleRefreshToken(ctx *gin.Context) {
 func (uh *UserHandlers) HandleForgetPassword(ctx *gin.Context) {
 	successResponse := httpResponse.GetSuccessResponse("Oh not again! Weak Memory")
 	ctx.JSON(http.StatusOK, successResponse)
+}
+
+func (uh *UserHandlers) HandleSendEmail(ctx *gin.Context) {
+	var requestBody models.SendEmailRequest
+
+	if err := ctx.ShouldBindJSON(&requestBody); err != nil {
+		errorResponse := httpResponse.GetErrorResponse(err.Error())
+		ctx.JSON(http.StatusBadRequest, errorResponse)
+		return
+	}
+	subject := `[Important] Todo Due Today`
+	emailBody := `
+	<html>
+		<body>
+			<p>Hello!</p>
+			<p>You have pending todos which are due today open your app and get it down. No More procrastination</p>
+		</body>
+	</html>
+	`
+
+	err := uh.emailService.SendEmailToAll(requestBody.UserEmailAddresses, subject, emailBody)
+	if err != nil {
+		errorResponse := httpResponse.GetErrorResponse(err.Error())
+		ctx.JSON(http.StatusBadRequest, errorResponse)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, httpResponse.GetSuccessResponse("email sent"))
 }
 
 func (uh *UserHandlers) HandleVerifyUser(ctx *gin.Context) {

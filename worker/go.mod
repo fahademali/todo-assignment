@@ -1,6 +1,13 @@
-module todo_service
+module worker
 
 go 1.21.3
+
+require (
+	github.com/uber-go/tally v3.5.8+incompatible
+	go.uber.org/cadence v1.0.2
+	go.uber.org/yarpc v1.70.4
+	go.uber.org/zap v1.26.0
+)
 
 require (
 	github.com/BurntSushi/toml v0.4.1 // indirect
@@ -11,9 +18,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/facebookgo/clock v0.0.0-20150410010913-600d898af40a // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
-	github.com/gogo/googleapis v1.3.2 // indirect
-	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/gogo/status v1.1.0 // indirect
 	github.com/golang/mock v1.5.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/marusama/semaphore/v2 v2.5.0 // indirect
@@ -33,19 +37,12 @@ require (
 	github.com/tklauser/numcpus v0.6.0 // indirect
 	github.com/twmb/murmur3 v1.1.8 // indirect
 	github.com/uber-go/mapdecode v1.0.0 // indirect
-	github.com/uber-go/tally v3.5.8+incompatible // indirect
-	github.com/uber/cadence-idl v0.0.0-20230905165949-03586319b849 // indirect
 	github.com/uber/tchannel-go v1.33.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.3 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
-	go.uber.org/cadence v1.0.2 // indirect
-	go.uber.org/dig v1.10.0 // indirect
-	go.uber.org/fx v1.13.1 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 	go.uber.org/net/metrics v1.3.0 // indirect
 	go.uber.org/thriftrw v1.29.2 // indirect
-	go.uber.org/yarpc v1.70.4 // indirect
-	go.uber.org/zap v1.26.0 // indirect
 	golang.org/x/exp/typeparams v0.0.0-20220218215828-6cf2b201936e // indirect
 	golang.org/x/lint v0.0.0-20200130185559-910be7a94367 // indirect
 	golang.org/x/mod v0.8.0 // indirect

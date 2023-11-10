@@ -10,6 +10,7 @@ import (
 )
 
 type IUserService interface {
+	GetUserEmailsByIds(userIDs []int64) ([]string, error)
 	Login(requestBody models.LoginRequest) (string, error)
 	Signup(ctx context.Context, requestBody models.SignupRequest) error
 	VerifyUser(email string) error
@@ -27,6 +28,10 @@ func NewUserService(userRepo repo.IUserRepo, cryptService ICryptService, tokenSe
 	return &UserService{userRepo: userRepo, cryptService: cryptService, tokenService: tokenService, emailService: emailService}
 }
 
+func (u *UserService) GetUserEmailsByIds(userIDs []int64) ([]string, error) {
+	return u.userRepo.GetEmailsByIDs(userIDs)
+}
+
 func (u *UserService) Login(requestBody models.LoginRequest) (string, error) {
 	user, err := u.userRepo.GetByEmail(requestBody.Email)
 	if err != nil {
@@ -38,7 +43,7 @@ func (u *UserService) Login(requestBody models.LoginRequest) (string, error) {
 		return "", err
 	}
 
-	token, err := u.tokenService.GenerateAccessToken(user.Email, user.Role, user.IsVerified)
+	token, err := u.tokenService.GenerateAccessToken(user)
 	if err != nil {
 		return "", err
 	}
@@ -52,7 +57,11 @@ func (u *UserService) Signup(ctx context.Context, requestBody models.SignupReque
 		return err
 	}
 
-	requestBody.Password = hashedPassword
+	var user = models.User{
+		Username: requestBody.UserName,
+		Email:    requestBody.Email,
+		Password: hashedPassword,
+	}
 
 	tx, err := u.userRepo.ExecTx(ctx)
 	if err != nil {
@@ -61,12 +70,12 @@ func (u *UserService) Signup(ctx context.Context, requestBody models.SignupReque
 	// Defer a rollback in case anything fails.
 	defer tx.Rollback()
 
-	err = u.userRepo.Insert(ctx, tx, requestBody)
+	user, err = u.userRepo.Insert(ctx, tx, user)
 	if err != nil {
 		return fmt.Errorf("SignupTx: %v", err)
 	}
 
-	token, err := u.tokenService.GenerateAccessToken(requestBody.Email, "user", false)
+	token, err := u.tokenService.GenerateAccessToken(user)
 	if err != nil {
 		return err
 	}

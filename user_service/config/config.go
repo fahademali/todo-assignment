@@ -12,6 +12,7 @@ var AppConfig struct {
 	POSTGRES_USER     string
 	POSTGRES_DB_NAME  string
 	POSTGRES_PASSWORD string
+	POSTGRES_PORT     int
 	SENDER_EMAIL      string
 	SENDER_APP_PASS   string
 	SMTP_SERVER       string
@@ -32,10 +33,13 @@ func init() {
 	AppConfig.SENDER_APP_PASS = getEnvValue("SENDER_APP_PASS", "anhf fraz llzc karg")
 	AppConfig.SMTP_SERVER = getEnvValue("SMTP_SERVER", "smtp.gmail.com")
 	AppConfig.SECRET_KEY = getEnvValue("SECRET_KEY", "mysecretkey")
-	AppConfig.BASE_URL = getEnvValue("BASE_URL", "http://localhost:8080")
+	AppConfig.BASE_URL = getEnvValue("BASE_URL", "http://localhost:8082")
 
 	if intVal, err := strconv.Atoi(getEnvValue("SMTP_PORT", "587")); err == nil {
 		AppConfig.SMTP_PORT = intVal
+	}
+	if intVal, err := strconv.Atoi(getEnvValue("POSTGRES_PORT", "5433")); err == nil {
+		AppConfig.POSTGRES_PORT = intVal
 	}
 }
 

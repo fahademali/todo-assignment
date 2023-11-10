@@ -14,6 +14,14 @@ type SignupRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type SendEmailRequest struct {
+	UserEmailAddresses []string `json:"userEmailAddresses" binding:"required"`
+}
+
+type GetUserEmailsByIdsRequest struct {
+	UserIDs []int64 `json:"user_ids" binding:"required"`
+}
+
 type AdminPromotionRequest struct {
 	Email string `json:"email" binding:"required"`
 }
@@ -31,5 +39,5 @@ type UserInfo struct {
 	Email      string  `json:"email"`
 	Role       string  `json:"role"`
 	IsVerified bool    `json:"isVerified"`
-	Nbf        float64 `json:"nbf"`
+	ValidFrom  float64 `json:"validFrom"`
 }
