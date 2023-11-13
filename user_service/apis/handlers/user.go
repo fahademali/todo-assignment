@@ -56,14 +56,14 @@ func (uh *UserHandlers) HandleGetUserEmailsByIDs(ctx *gin.Context) {
 		return
 	}
 
-	userEmails, err := uh.userService.GetUserEmailsByIds(requestBody.UserIDs)
+	users, err := uh.userService.GetUsersByIds(requestBody.UserIDs)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(err.Error()))
 		return
 	}
 
-	log.GetLog().Info(userEmails)
-	ctx.JSON(http.StatusOK, httpResponse.GetSuccessResponse(userEmails))
+	log.GetLog().Info(users)
+	ctx.JSON(http.StatusOK, httpResponse.GetSuccessResponse(users))
 }
 
 func (uh *UserHandlers) HandleLogin(ctx *gin.Context) {
@@ -116,7 +116,9 @@ func (uh *UserHandlers) HandleForgetPassword(ctx *gin.Context) {
 }
 
 func (uh *UserHandlers) HandleSendEmails(ctx *gin.Context) {
-	var requestBody models.SendEmailsRequest
+	log.GetLog().Warn("running HandleSendEmails.........")
+
+	var requestBody models.SendEmailsRequestv2
 
 	if err := ctx.ShouldBindJSON(&requestBody); err != nil {
 		errorResponse := httpResponse.GetErrorResponse(err.Error())
@@ -124,8 +126,9 @@ func (uh *UserHandlers) HandleSendEmails(ctx *gin.Context) {
 		return
 	}
 
-	err := uh.emailService.SendEmailToAll(requestBody.UserEmailAddresses, requestBody.Subject, requestBody.Body)
+	err := uh.emailService.SendEmailToAll(requestBody.RecepietDetails)
 	if err != nil {
+		log.GetLog().Error(err)
 		errorResponse := httpResponse.GetErrorResponse(err.Error())
 		ctx.JSON(http.StatusBadRequest, errorResponse)
 		return

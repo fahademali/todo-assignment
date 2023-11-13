@@ -12,7 +12,7 @@ import (
 )
 
 func GetTodosDueTodayActivity(ctx context.Context) (models.TodosDueTodaySuccessResponse, error) {
-	fmt.Println(",,,,,,,,,,,,,,,activity,,,,,,,,,,,,,,,")
+	fmt.Println(",,,,,,,,,,,,,,,running GetTodosDueTodayActivity,,,,,,,,,,,,,,,")
 	var todosDueToday models.TodosDueTodaySuccessResponse
 	var errResponse models.ErrorResponse
 

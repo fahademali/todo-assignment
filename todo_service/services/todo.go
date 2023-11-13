@@ -11,6 +11,7 @@ type ITodoService interface {
 	DeleteTodo(id int64, userID int64) error
 	GetTodo(id int64, userID int64) (models.Todo, error)
 	GetTodosByDate(dueDate string) ([]int64, error)
+	GetTodosByDatev2(dueDate string) ([]models.GetTodosByDate, error)
 	GetTodosByListID(listID int64, userID int64, limit int, cursor int64) ([]models.Todo, error)
 	UpdateTodo(id int64, userID int64, todoUpdates models.UpdateTodoRequest) error
 }
@@ -44,6 +45,26 @@ func (ts *TodoService) GetTodo(id int64, userID int64) (models.Todo, error) {
 
 func (ts *TodoService) GetTodosByDate(dueDate string) ([]int64, error) {
 	return ts.todoRepo.GetByDate(dueDate)
+}
+
+func (ts *TodoService) GetTodosByDatev2(dueDate string) ([]models.GetTodosByDate, error) {
+	var structuredTodos []models.GetTodosByDate
+	var todosMap = make(map[int64][]string)
+
+	todos, err := ts.todoRepo.GetByDatev2(dueDate)
+	if err != nil {
+		return structuredTodos, err
+	}
+
+	for _, todo := range todos {
+		todosMap[todo.UserID] = append(todosMap[todo.UserID], todo.Title)
+	}
+
+	for id, todoTitles := range todosMap {
+		structuredTodos = append(structuredTodos, models.GetTodosByDate{UserID: id, TodoTitles: todoTitles})
+	}
+
+	return structuredTodos, nil
 }
 
 func (ts *TodoService) GetTodosByListID(listID int64, userID int64, limit int, cursor int64) ([]models.Todo, error) {

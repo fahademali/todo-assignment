@@ -13,7 +13,7 @@ import (
 type IUserRepo interface {
 	SetAdminRole(email string) error
 	GetByEmail(email string) (models.User, error)
-	GetEmailsByIDs(userIDs []int64) ([]string, error)
+	GetByIDs(userIDs []int64) ([]models.User, error)
 	Insert(ctx context.Context, tx *sql.Tx, newUser models.User) (models.User, error)
 	Update(user models.User) error
 	ExecTx(ctx context.Context) (*sql.Tx, error)
@@ -29,7 +29,6 @@ func NewUserRepo(db *sql.DB) IUserRepo {
 
 func (ur *UserRepo) GetByEmail(email string) (models.User, error) {
 	var user models.User
-	// TODO:scan on the same line with &user just
 	row := ur.db.QueryRow("Select * from users WHERE email = $1", email)
 	if err := row.Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.Role, &user.IsVerified); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -41,8 +40,8 @@ func (ur *UserRepo) GetByEmail(email string) (models.User, error) {
 	return user, nil
 }
 
-func (ur *UserRepo) GetEmailsByIDs(userIDs []int64) ([]string, error) {
-	userEmails := make([]string, 0)
+func (ur *UserRepo) GetByIDs(userIDs []int64) ([]models.User, error) {
+	var users []models.User
 
 	placeholders := make([]string, len(userIDs))
 	values := make([]interface{}, len(userIDs))
@@ -52,26 +51,26 @@ func (ur *UserRepo) GetEmailsByIDs(userIDs []int64) ([]string, error) {
 	}
 	placeholderString := strings.Join(placeholders, ", ")
 
-	query := fmt.Sprintf("SELECT email FROM users WHERE id IN (%s)", placeholderString)
+	query := fmt.Sprintf("SELECT id, email FROM users WHERE id IN (%s)", placeholderString)
 
 	rows, err := ur.db.Query(query, values...)
 	if err != nil {
-		return userEmails, err
+		return users, err
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		var email string
-		if err := rows.Scan(&email); err != nil {
-			return userEmails, err
+		var user models.User
+		if err := rows.Scan(&user.ID, &user.Email); err != nil {
+			return users, err
 		}
-		userEmails = append(userEmails, email)
+		users = append(users, user)
 	}
 
 	if err := rows.Err(); err != nil {
-		return userEmails, err
+		return users, err
 	}
-	return userEmails, nil
+	return users, nil
 }
 
 func (ur *UserRepo) Insert(ctx context.Context, tx *sql.Tx, newUser models.User) (models.User, error) {

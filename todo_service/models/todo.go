@@ -30,6 +30,23 @@ type UpdateTodoRequest struct {
 	CompletionDate time.Time
 }
 
+type TodoWithUserID struct {
+	ID             int        `db:"id"`
+	Title          string     `db:"title"`
+	Description    string     `db:"description"`
+	DueDate        time.Time  `db:"due_date"`
+	IsComplete     bool       `db:"is_complete"`
+	CompletionDate *time.Time `db:"completion_date"`
+	CreationTime   *time.Time `db:"creation_time"`
+	ListID         int        `db:"list_id"`
+	UserID         int64      `db:"user_id"`
+}
+
+type GetTodosByDate struct {
+	UserID     int64
+	TodoTitles []string
+}
+
 type UserInfo struct {
 	ID         int64
 	Email      string

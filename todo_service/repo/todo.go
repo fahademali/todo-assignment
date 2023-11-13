@@ -13,6 +13,7 @@ type ITodoRepo interface {
 	DeleteByListIDForUser(listID int64, ctx context.Context, tx *sql.Tx) error
 	GetForUser(id int64, userID int64) (models.Todo, error)
 	GetByDate(dueDate string) ([]int64, error)
+	GetByDatev2(dueDate string) ([]models.TodoWithUserID, error)
 	GetByListIDForUser(listID int64, userID int64, limit int, cursor int64) ([]models.Todo, error)
 	UpdateForUser(id int64, userID int64, todoUpdates models.Todo) error
 	ExecTx(ctx context.Context) (*sql.Tx, error)
@@ -132,6 +133,37 @@ func (tr *TodoRepo) GetByDate(dueDate string) ([]int64, error) {
 		return nil, fmt.Errorf("no users found with task due %s", dueDate)
 	}
 	return userIDCollection, nil
+}
+
+func (tr *TodoRepo) GetByDatev2(dueDate string) ([]models.TodoWithUserID, error) {
+	var todos []models.TodoWithUserID
+	rows, err := tr.db.Query(`select l.user_id, t.title from todos t 
+	INNER JOIN list l ON l.id=t.list_id 
+	WHERE date_trunc('day',t.due_date) = $1`, dueDate)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var todo models.TodoWithUserID
+
+		err := rows.Scan(&todo.UserID, &todo.Title)
+		if err != nil {
+			return nil, err
+		}
+		todos = append(todos, todo)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("database iteration error: %v", err)
+	}
+
+	if len(todos) == 0 {
+		return nil, fmt.Errorf("no todos found with duedate %s", dueDate)
+	}
+	return todos, nil
 }
 
 func (tr *TodoRepo) GetByListIDForUser(listID int64, userID int64, limit int, cursor int64) ([]models.Todo, error) {

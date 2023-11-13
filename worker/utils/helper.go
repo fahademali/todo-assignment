@@ -62,6 +62,6 @@ func GetDefaultStartWorkflowOptions(cronSchedule string) client.StartWorkflowOpt
 	return client.StartWorkflowOptions{
 		TaskList:                     config.AppConfig.TASK_LIST_NAME,
 		ExecutionStartToCloseTimeout: 10 * time.Second,
-		CronSchedule:                 cronSchedule,
+		// CronSchedule:                 cronSchedule,
 	}
 }

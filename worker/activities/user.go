@@ -6,17 +6,22 @@ import (
 	"fmt"
 
 	"worker/config"
+	"worker/log"
 	"worker/models"
 	"worker/utils"
 )
 
-func GetEmailsByUserIDActivity(ctx context.Context, userIDs models.TodosDueTodaySuccessResponse) (models.GetEmailsByIDSuccessResponse, error) {
+// TODO: either pass the todoIDs only or name it something different
+func GetEmailsByUserIDActivity(ctx context.Context, userIDs []int64) (models.GetEmailsByIDSuccessResponse, error) {
+	fmt.Println(",,,,,,,,,,,,,,,running GetEmailsByUserIDActivity,,,,,,,,,,,,,,,")
+
 	var emailResponse models.GetEmailsByIDSuccessResponse
 	var getEmailsByIDUrl = fmt.Sprintf("%s/internal/users", config.AppConfig.BASEURL_USER_SERVICE)
 
 	payload := map[string][]int64{
-		"user_ids": userIDs.Data,
+		"userIDs": userIDs,
 	}
+
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
 		return emailResponse, err
@@ -30,15 +35,15 @@ func GetEmailsByUserIDActivity(ctx context.Context, userIDs models.TodosDueToday
 	return emailResponse, nil
 }
 
-func SendEmailActivity(ctx context.Context, emailResponse models.GetEmailsByIDSuccessResponse, subject string, body string) (models.SendEmailSuccessResponse, error) {
+func SendEmailActivity(ctx context.Context, recepientDetails []models.RecepietDetails) (models.SendEmailSuccessResponse, error) {
+	fmt.Println(",,,,,,,,,,,,,,,running SendEmailActivity,,,,,,,,,,,,,,,")
 	var emailSuccessResponse models.SendEmailSuccessResponse
 	var sendEmailUrl = fmt.Sprintf("%s/internal/send-email", config.AppConfig.BASEURL_USER_SERVICE)
 
 	payload := models.SendEmailPayload{
-		UserEmailAddresses: emailResponse.Data,
-		Subject:            subject,
-		Body:               body,
+		RecepietDetails: recepientDetails,
 	}
+
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
 		return emailSuccessResponse, err
@@ -48,6 +53,9 @@ func SendEmailActivity(ctx context.Context, emailResponse models.GetEmailsByIDSu
 	if err != nil {
 		return emailSuccessResponse, err
 	}
+
+	log.GetLog().Info("email sent success fully ")
+	log.GetLog().Info(emailSuccessResponse)
 
 	return emailSuccessResponse, nil
 }

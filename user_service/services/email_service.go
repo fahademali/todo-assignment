@@ -2,13 +2,14 @@ package services
 
 import (
 	"user_service/log"
+	"user_service/models"
 
 	"gopkg.in/gomail.v2"
 )
 
 type IEmailService interface {
 	SendEmail(receiverEmail string, subject string, body string) error
-	SendEmailToAll(receiverEmails []string, subject string, body string) error
+	SendEmailToAll(recepientDetails []models.RecepietDetails) error
 }
 
 type EmailService struct {
@@ -37,14 +38,21 @@ func (es *EmailService) SendEmail(receiverEmail string, subject string, body str
 	return dialer.DialAndSend(emailMsg)
 }
 
-func (es *EmailService) SendEmailToAll(receiverEmails []string, subject string, body string) error {
+func (es *EmailService) SendEmailToAll(recepientDetails []models.RecepietDetails) error {
 	emailMsg := gomail.NewMessage()
-	emailMsg.SetHeader("From", es.senderEmail)
-	emailMsg.SetHeader("To", receiverEmails...)
-	emailMsg.SetHeader("Subject", subject)
-	emailMsg.SetBody("text/html", body)
-
 	dialer := gomail.NewDialer(es.senderSmtpServer, es.senderSmtpPort, es.senderEmail, es.senderAppPass)
+	emailMsg.SetHeader("From", es.senderEmail)
 
-	return dialer.DialAndSend(emailMsg)
+	for _, recepient := range recepientDetails {
+		emailMsg.SetHeader("To", recepient.UserEmail)
+		emailMsg.SetHeader("Subject", recepient.Subject)
+		emailMsg.SetBody("text/html", recepient.Body)
+		if err := dialer.DialAndSend(emailMsg); err != nil {
+			log.GetLog().Error("err")
+			log.GetLog().Error(err)
+			return err
+		}
+	}
+
+	return nil
 }

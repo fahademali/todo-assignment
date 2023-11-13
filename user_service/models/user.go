@@ -21,7 +21,7 @@ type SendEmailsRequest struct {
 }
 
 type GetUserEmailsByIdsRequest struct {
-	UserIDs []int64 `json:"user_ids" binding:"required"`
+	UserIDs []int64 `json:"userIDs" binding:"required"`
 }
 
 type AdminPromotionRequest struct {
@@ -42,4 +42,13 @@ type UserInfo struct {
 	Role       string  `json:"role"`
 	IsVerified bool    `json:"isVerified"`
 	ValidFrom  float64 `json:"validFrom"`
+}
+
+type RecepietDetails struct {
+	UserEmail string `json:"userEmail" binding:"required"`
+	Subject   string `json:"subject" binding:"required"`
+	Body      string `json:"body" binding:"required"`
+}
+type SendEmailsRequestv2 struct {
+	RecepietDetails []RecepietDetails `json:"recepientDetails" binding:"required"`
 }
