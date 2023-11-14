@@ -13,7 +13,7 @@ type ITodoRepo interface {
 	DeleteByListIDForUser(listID int64, ctx context.Context, tx *sql.Tx) error
 	GetForUser(id int64, userID int64) (models.Todo, error)
 	GetByDate(dueDate string) ([]int64, error)
-	GetByDatev2(dueDate string) ([]models.TodoWithUserID, error)
+	GetByDateRange(startDate string, endDate string) ([]models.TodoWithUserID, error)
 	GetByListIDForUser(listID int64, userID int64, limit int, cursor int64) ([]models.Todo, error)
 	UpdateForUser(id int64, userID int64, todoUpdates models.Todo) error
 	ExecTx(ctx context.Context) (*sql.Tx, error)
@@ -135,11 +135,11 @@ func (tr *TodoRepo) GetByDate(dueDate string) ([]int64, error) {
 	return userIDCollection, nil
 }
 
-func (tr *TodoRepo) GetByDatev2(dueDate string) ([]models.TodoWithUserID, error) {
+func (tr *TodoRepo) GetByDateRange(startDate string, endDate string) ([]models.TodoWithUserID, error) {
 	var todos []models.TodoWithUserID
 	rows, err := tr.db.Query(`select l.user_id, t.title from todos t 
 	INNER JOIN list l ON l.id=t.list_id 
-	WHERE date_trunc('day',t.due_date) = $1`, dueDate)
+	WHERE date_trunc('day',t.due_date) >= $1 AND date_trunc('day',t.due_date) <= $2`, startDate, endDate)
 
 	if err != nil {
 		return nil, err
@@ -161,7 +161,7 @@ func (tr *TodoRepo) GetByDatev2(dueDate string) ([]models.TodoWithUserID, error)
 	}
 
 	if len(todos) == 0 {
-		return nil, fmt.Errorf("no todos found with duedate %s", dueDate)
+		return nil, fmt.Errorf("no todos found with range between %s and %s", startDate, endDate)
 	}
 	return todos, nil
 }

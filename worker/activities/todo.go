@@ -19,7 +19,8 @@ func GetTodosDueTodayActivity(ctx context.Context) (models.TodosDueTodayResponse
 
 	params := url.Values{}
 
-	params.Add("due_date", now.Format(models.DATE_FORMAT))
+	params.Add("start_date", now.Format(models.DATE_FORMAT))
+	params.Add("end_date", now.Format(models.DATE_FORMAT))
 
 	url, _ := url.ParseRequestURI(config.AppConfig.BASEURL_TODO_SERVICE)
 	url.Path = models.TODO_RESOURCE
