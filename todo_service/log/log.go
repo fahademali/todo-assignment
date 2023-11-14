@@ -10,7 +10,6 @@ var log *logrus.Logger
 
 func init() {
 	log = logrus.New()
-	// log.SetFormatter(&logrus.JSONFormatter{})
 	log.Out = os.Stdout
 }
 

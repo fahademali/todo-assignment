@@ -2,47 +2,37 @@ package activities
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"net/http"
 	"net/url"
 	"time"
+	"user_service/log"
+
 	"worker/config"
 	"worker/models"
+	"worker/utils"
 )
 
-func GetTodosDueTodayActivity(ctx context.Context) (models.TodosDueTodaySuccessResponse, error) {
-	fmt.Println(",,,,,,,,,,,,,,,running GetTodosDueTodayActivity,,,,,,,,,,,,,,,")
-	var todosDueToday models.TodosDueTodaySuccessResponse
-	var errResponse models.ErrorResponse
+func GetTodosDueTodayActivity(ctx context.Context) (models.TodosDueTodayResponse, error) {
+	var todosDueToday models.TodosDueTodayResponse
 
 	now := time.Now()
-	resource := "/internal/todos"
-	dateFormat := "2006-01-02"
+
 	params := url.Values{}
 
-	params.Add("due_date", now.Format(dateFormat))
+	params.Add("due_date", now.Format(models.DATE_FORMAT))
 
-	u, _ := url.ParseRequestURI(config.AppConfig.BASEURL_TODO_SERVICE)
-	u.Path = resource
-	u.RawQuery = params.Encode()
-	urlStr := fmt.Sprintf("%v", u)
+	url, _ := url.ParseRequestURI(config.AppConfig.BASEURL_TODO_SERVICE)
+	url.Path = models.TODO_RESOURCE
+	url.RawQuery = params.Encode()
+	urlStr := fmt.Sprintf("%v", url)
 
-	resp, err := http.Get(urlStr)
+	todosDueToday, err := utils.MakeGetReq[models.TodosDueTodayResponse](urlStr)
 	if err != nil {
 		return todosDueToday, err
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		if err = json.NewDecoder(resp.Body).Decode(&errResponse); err != nil {
-			return todosDueToday, err
-		}
-		return todosDueToday, fmt.Errorf(errResponse.Error)
-	}
-
-	if err = json.NewDecoder(resp.Body).Decode(&todosDueToday); err != nil {
-		return todosDueToday, err
-	}
+	log.GetLog().Info("todosDueToday")
+	log.GetLog().Info(todosDueToday)
 
 	return todosDueToday, nil
 }

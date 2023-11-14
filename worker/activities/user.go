@@ -6,20 +6,16 @@ import (
 	"fmt"
 
 	"worker/config"
-	"worker/log"
 	"worker/models"
 	"worker/utils"
 )
 
-// TODO: either pass the todoIDs only or name it something different
-func GetEmailsByUserIDActivity(ctx context.Context, userIDs []int64) (models.GetEmailsByIDSuccessResponse, error) {
-	fmt.Println(",,,,,,,,,,,,,,,running GetEmailsByUserIDActivity,,,,,,,,,,,,,,,")
-
-	var emailResponse models.GetEmailsByIDSuccessResponse
+func GetEmailsByUserIDActivity(ctx context.Context, userIDs []int64) (models.GetEmailsByIDResponse, error) {
+	var emailResponse models.GetEmailsByIDResponse
 	var getEmailsByIDUrl = fmt.Sprintf("%s/internal/users", config.AppConfig.BASEURL_USER_SERVICE)
 
-	payload := map[string][]int64{
-		"userIDs": userIDs,
+	payload := models.GetEmailByUserIDPayload{
+		UserIDs: userIDs,
 	}
 
 	payloadBytes, err := json.Marshal(payload)
@@ -27,17 +23,11 @@ func GetEmailsByUserIDActivity(ctx context.Context, userIDs []int64) (models.Get
 		return emailResponse, err
 	}
 
-	emailResponse, err = utils.MakeHttpReq[models.GetEmailsByIDSuccessResponse](payloadBytes, getEmailsByIDUrl)
-	if err != nil {
-		return emailResponse, err
-	}
-
-	return emailResponse, nil
+	return utils.MakePOSTReq[models.GetEmailsByIDResponse](payloadBytes, getEmailsByIDUrl)
 }
 
-func SendEmailActivity(ctx context.Context, recepientDetails []models.RecepietDetails) (models.SendEmailSuccessResponse, error) {
-	fmt.Println(",,,,,,,,,,,,,,,running SendEmailActivity,,,,,,,,,,,,,,,")
-	var emailSuccessResponse models.SendEmailSuccessResponse
+func SendEmailActivity(ctx context.Context, recepientDetails []models.RecepietDetails) (models.SendEmailResponse, error) {
+	var emailSuccessResponse models.SendEmailResponse
 	var sendEmailUrl = fmt.Sprintf("%s/internal/send-email", config.AppConfig.BASEURL_USER_SERVICE)
 
 	payload := models.SendEmailPayload{
@@ -49,13 +39,10 @@ func SendEmailActivity(ctx context.Context, recepientDetails []models.RecepietDe
 		return emailSuccessResponse, err
 	}
 
-	emailSuccessResponse, err = utils.MakeHttpReq[models.SendEmailSuccessResponse](payloadBytes, sendEmailUrl)
+	emailSuccessResponse, err = utils.MakePOSTReq[models.SendEmailResponse](payloadBytes, sendEmailUrl)
 	if err != nil {
 		return emailSuccessResponse, err
 	}
-
-	log.GetLog().Info("email sent success fully ")
-	log.GetLog().Info(emailSuccessResponse)
 
 	return emailSuccessResponse, nil
 }

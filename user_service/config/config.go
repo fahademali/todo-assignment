@@ -24,6 +24,7 @@ var AppConfig struct {
 	CADENCE_TASK_LIST_NAME string
 	CADENCE_CLIENT_NAME    string
 	CADENCE_SERVICE        string
+	DAILY_MIDNIGHT_UTC     string
 }
 
 func init() {
@@ -44,6 +45,7 @@ func init() {
 	AppConfig.CADENCE_TASK_LIST_NAME = getEnvValue("CADENCE_TASK_LIST_NAME", "test-list")
 	AppConfig.CADENCE_CLIENT_NAME = getEnvValue("CADENCE_CLIENT_NAME", "test-client")
 	AppConfig.CADENCE_SERVICE = getEnvValue("CADENCE_SERVICE", "cadence-frontend")
+	AppConfig.DAILY_MIDNIGHT_UTC = getEnvValue("DAILY_MIDNIGHT_UTC", "0 0 * * *")
 
 	if intVal, err := strconv.Atoi(getEnvValue("SMTP_PORT", "587")); err == nil {
 		AppConfig.SMTP_PORT = intVal

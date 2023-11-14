@@ -22,10 +22,8 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
-	// Start your application
 	startWorker(buildLogger(), buildCadenceClient())
 
-	// Wait for termination signals
 	<-quit
 }
 
@@ -61,8 +59,6 @@ func buildCadenceClient() workflowserviceclient.Interface {
 }
 
 func startWorker(logger *zap.Logger, service workflowserviceclient.Interface) {
-	// TaskListName identifies set of client workflows, activities, and workers.
-	// It could be your group or client or application name.
 	workerOptions := worker.Options{
 		Logger:       logger,
 		MetricsScope: tally.NewTestScope(config.AppConfig.TASK_LIST_NAME, map[string]string{}),

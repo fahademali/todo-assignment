@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"worker/log"
 
@@ -30,8 +29,6 @@ func init() {
 	AppConfig.CADENCE_SERVICE = getEnvValue("CADENCE_SERVICE", "cadence-frontend")
 	AppConfig.BASEURL_TODO_SERVICE = getEnvValue("BASEURL_TODO_SERVICE", "http://localhost:8081")
 	AppConfig.BASEURL_USER_SERVICE = getEnvValue("BASEURL_USER_SERVICE", "http://localhost:8082")
-
-	fmt.Println(AppConfig)
 }
 
 func getEnvValue(key string, defaultValue string) string {

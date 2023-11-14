@@ -14,7 +14,7 @@ import (
 )
 
 func RemindUsersForDueDateWorkflow(ctx workflow.Context) error {
-	fmt.Println(",,,,,,,,,,,,,,running workflow,,,,,,,,,,,,,,,,")
+	log.GetLog().Info("running RemindUsersForDueDateWorkflow...............")
 	var userIDs []int64
 
 	emailSubject := `[Important] You Have Todos Due Today`
@@ -22,7 +22,7 @@ func RemindUsersForDueDateWorkflow(ctx workflow.Context) error {
 	activityOptions := utils.GetDefaultActivityOptions()
 	ctx = workflow.WithActivityOptions(ctx, activityOptions)
 
-	var todosDueTodayResponse models.TodosDueTodaySuccessResponse
+	var todosDueTodayResponse models.TodosDueTodayResponse
 	todosDueDateFuture := workflow.ExecuteActivity(ctx, activities.GetTodosDueTodayActivity)
 	if err := todosDueDateFuture.Get(ctx, &todosDueTodayResponse); err != nil {
 		return err
@@ -33,7 +33,7 @@ func RemindUsersForDueDateWorkflow(ctx workflow.Context) error {
 	}
 
 	log.GetLog().Info(userIDs)
-	var userEmailsResponse models.GetEmailsByIDSuccessResponse
+	var userEmailsResponse models.GetEmailsByIDResponse
 	userEmailsFuture := workflow.ExecuteActivity(ctx, activities.GetEmailsByUserIDActivity, userIDs)
 	if err := userEmailsFuture.Get(ctx, &userEmailsResponse); err != nil {
 		return err
@@ -61,18 +61,13 @@ func RemindUsersForDueDateWorkflow(ctx workflow.Context) error {
 		recepientDetails = append(recepientDetails, models.RecepietDetails{UserEmail: userMap[todo.UserID], Body: emailBody, Subject: emailSubject})
 	}
 
-	log.GetLog().Info("......................continuing  worflow...........................")
-
-	var sendEmailResponse models.SendEmailSuccessResponse
+	var sendEmailResponse models.SendEmailResponse
 	sendEmailFuture := workflow.ExecuteActivity(ctx, activities.SendEmailActivity, recepientDetails)
 	if err := sendEmailFuture.Get(ctx, &sendEmailResponse); err != nil {
 		log.GetLog().Error("ERR")
 		log.GetLog().Error(err)
 		return err
 	}
-	log.GetLog().Info(sendEmailResponse)
-
-	log.GetLog().Info("......................completed worflow...........................")
 
 	workflow.GetLogger(ctx).Info("Done", zap.String("result", "result"))
 	return nil

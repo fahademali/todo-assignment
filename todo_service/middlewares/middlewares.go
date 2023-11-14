@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 	httpResponse "todo_service/http"
@@ -35,7 +34,6 @@ func (tm *TodoMiddleware) Authenticate(ctx *gin.Context) {
 	}
 
 	accessTokenParts := strings.Split(accessTokenHeader, " ")
-	fmt.Println(accessTokenParts)
 	if len(accessTokenParts) != 2 || accessTokenParts[0] != "Bearer" {
 		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse("Invalid or missing token"))
 		ctx.Abort()

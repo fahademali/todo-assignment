@@ -30,7 +30,7 @@ func AddUserRoutes(ur *gin.Engine, handlers handlers.IUserHandlers, middleware m
 
 	ur.POST("/internal/send-email", handlers.HandleSendEmails)
 
-	ur.POST("/internal/users", handlers.HandleGetUserEmailsByIDs)
+	ur.POST("/internal/users", handlers.HandleGetUserByIDs)
 
 	ur.PATCH("/grant-admin-role", middleware.Authorize, handlers.HandleGrantAdminRole)
 }

@@ -10,7 +10,7 @@ import (
 )
 
 type IUserService interface {
-	GetUsersByIds(userIDs []int64) ([]models.User, error)
+	GetUserByIds(userIDs []int64) ([]models.User, error)
 	Login(requestBody models.LoginRequest) (string, error)
 	Signup(ctx context.Context, requestBody models.SignupRequest) error
 	VerifyUser(email string) error
@@ -28,7 +28,7 @@ func NewUserService(userRepo repo.IUserRepo, cryptService ICryptService, tokenSe
 	return &UserService{userRepo: userRepo, cryptService: cryptService, tokenService: tokenService, emailService: emailService}
 }
 
-func (u *UserService) GetUsersByIds(userIDs []int64) ([]models.User, error) {
+func (u *UserService) GetUserByIds(userIDs []int64) ([]models.User, error) {
 	return u.userRepo.GetByIDs(userIDs)
 }
 

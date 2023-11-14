@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	httpResponse "user_service/http"
@@ -28,21 +29,13 @@ func NewUserMiddlewares(tokenService services.ITokenService) IUserMiddleware {
 func (um *UserMiddleware) Authorize(ctx *gin.Context) {
 	accessTokenHeader := ctx.Request.Header.Get("Authorization")
 
-	if accessTokenHeader == "" {
-		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse("Authorization Header is missing"))
+	token, err := validateAndExtractToken(accessTokenHeader)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(err.Error()))
 		ctx.Abort()
 		return
 	}
 
-	accessTokenParts := strings.Split(accessTokenHeader, " ")
-
-	if len(accessTokenParts) != 2 || accessTokenParts[0] != "Bearer" {
-		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse("Invalid or missing token"))
-		ctx.Abort()
-		return
-	}
-
-	token := accessTokenParts[1]
 	user, err := um.tokenService.GetInfoFromToken(token)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(err.Error()))
@@ -55,4 +48,18 @@ func (um *UserMiddleware) Authorize(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
+}
+
+func validateAndExtractToken(tokenHeader string) (string, error) {
+	if tokenHeader == "" {
+		return "", fmt.Errorf("authorization Header is missing")
+	}
+
+	accessTokenParts := strings.Split(tokenHeader, " ")
+
+	if len(accessTokenParts) != 2 || accessTokenParts[0] != "Bearer" {
+		return "", fmt.Errorf("invalid or missing token")
+	}
+
+	return accessTokenParts[1], nil
 }

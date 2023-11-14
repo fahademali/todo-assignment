@@ -13,7 +13,7 @@ import (
 
 type IUserHandlers interface {
 	HandleGetProfile(ctx *gin.Context)
-	HandleGetUserEmailsByIDs(ctx *gin.Context)
+	HandleGetUserByIDs(ctx *gin.Context)
 	HandleLogin(ctx *gin.Context)
 	HandleSignup(ctx *gin.Context)
 	HandleRefreshToken(ctx *gin.Context)
@@ -46,9 +46,8 @@ func (uh *UserHandlers) HandleGetProfile(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, successResponse)
 }
 
-func (uh *UserHandlers) HandleGetUserEmailsByIDs(ctx *gin.Context) {
+func (uh *UserHandlers) HandleGetUserByIDs(ctx *gin.Context) {
 	var requestBody models.GetUserEmailsByIdsRequest
-	log.GetLog().Info("running HandleGetUserEmailsByIDs..........")
 
 	if err := ctx.ShouldBindJSON(&requestBody); err != nil {
 		errorResponse := httpResponse.GetErrorResponse(err.Error())
@@ -56,7 +55,7 @@ func (uh *UserHandlers) HandleGetUserEmailsByIDs(ctx *gin.Context) {
 		return
 	}
 
-	users, err := uh.userService.GetUsersByIds(requestBody.UserIDs)
+	users, err := uh.userService.GetUserByIds(requestBody.UserIDs)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(err.Error()))
 		return
