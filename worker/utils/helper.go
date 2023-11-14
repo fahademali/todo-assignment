@@ -33,7 +33,6 @@ func MakePOSTReq[E interface{}](payloadBytes []byte, url string) (E, error) {
 	defer response.Body.Close()
 
 	//TODO: If the route is not found e.g sending post instead of get do inform the user properly
-
 	if response.StatusCode < 200 || response.StatusCode > 299 {
 		if err = json.NewDecoder(response.Body).Decode(&errResponse); err != nil {
 			return successResponse, err

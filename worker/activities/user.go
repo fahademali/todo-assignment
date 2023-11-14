@@ -39,10 +39,5 @@ func SendEmailActivity(ctx context.Context, recepientDetails []models.RecepietDe
 		return emailSuccessResponse, err
 	}
 
-	emailSuccessResponse, err = utils.MakePOSTReq[models.SendEmailResponse](payloadBytes, sendEmailUrl)
-	if err != nil {
-		return emailSuccessResponse, err
-	}
-
-	return emailSuccessResponse, nil
+	return utils.MakePOSTReq[models.SendEmailResponse](payloadBytes, sendEmailUrl)
 }

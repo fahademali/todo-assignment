@@ -14,10 +14,7 @@ import (
 )
 
 func RemindUsersForDueDateWorkflow(ctx workflow.Context) error {
-	log.GetLog().Info("running RemindUsersForDueDateWorkflow...............")
 	var userIDs []int64
-
-	emailSubject := `[Important] You Have Todos Due Today`
 
 	activityOptions := utils.GetDefaultActivityOptions()
 	ctx = workflow.WithActivityOptions(ctx, activityOptions)
@@ -48,24 +45,14 @@ func RemindUsersForDueDateWorkflow(ctx workflow.Context) error {
 	var recepientDetails []models.RecepietDetails
 
 	for _, todo := range todosDueTodayResponse.Data {
-		emailBody := fmt.Sprintf(`
-		<html>
-			<body>
-				<p>Hello!</p>
-				<p>Below are the todos due Today</p>
-				<p>%s</p>
-			</body>
-		</html>
-		`, strings.Join(todo.TodoTitles, ","))
-
+		emailBody := fmt.Sprintf(models.EMAIL_BODY_TEMPLATE, strings.Join(todo.TodoTitles, ","))
+		emailSubject := fmt.Sprintf(models.EMAIL_SUBJECT_TEMPLATE, len(todo.TodoTitles))
 		recepientDetails = append(recepientDetails, models.RecepietDetails{UserEmail: userMap[todo.UserID], Body: emailBody, Subject: emailSubject})
 	}
 
 	var sendEmailResponse models.SendEmailResponse
 	sendEmailFuture := workflow.ExecuteActivity(ctx, activities.SendEmailActivity, recepientDetails)
 	if err := sendEmailFuture.Get(ctx, &sendEmailResponse); err != nil {
-		log.GetLog().Error("ERR")
-		log.GetLog().Error(err)
 		return err
 	}
 

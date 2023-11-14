@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"todo_service/log"
 	"user_service/config"
 
 	"go.uber.org/cadence/.gen/go/cadence/workflowserviceclient"
@@ -36,8 +35,4 @@ func buildCadenceClient(domain string) client.Client {
 func BeginWorkflows(ctx context.Context, beginWorkflowOpts client.StartWorkflowOptions, workflows ...interface{}) {
 	cadenceClient := buildCadenceClient(config.AppConfig.CADENCE_DOMAIN)
 	cadenceClient.StartWorkflow(ctx, beginWorkflowOpts, "worker/workflows.RemindUsersForDueDateWorkflow")
-	// cadenceClient.StartWorkflow(ctx, beginWorkflowOpts)
-	log.GetLog().Info("running BeginWorkflows.............")
-	log.GetLog().Info(cadenceClient)
-	log.GetLog().Info(workflows...)
 }

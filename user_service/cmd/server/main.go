@@ -12,6 +12,7 @@ import (
 	"user_service/config"
 	"user_service/infra"
 	"user_service/middlewares"
+	"user_service/models"
 	"user_service/repo"
 	"user_service/services"
 )
@@ -25,11 +26,9 @@ func main() {
 	var userHandlers handlers.IUserHandlers
 	var userMiddleware middlewares.IUserMiddleware
 
-	const REMIND_WORKFLOW = "worker/workflows.RemindUsersForDueDateWorkflow"
-
 	ctx := context.Background()
 	beginWorkflowOptions := utils.GetDefaultBeginWorkflowOptions(config.AppConfig.DAILY_MIDNIGHT_UTC)
-	client.BeginWorkflows(ctx, beginWorkflowOptions, REMIND_WORKFLOW)
+	client.BeginWorkflows(ctx, beginWorkflowOptions, models.REMIND_WORKFLOW)
 
 	r := gin.Default()
 

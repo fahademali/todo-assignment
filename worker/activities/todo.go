@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/url"
 	"time"
-	"user_service/log"
 
 	"worker/config"
 	"worker/models"
@@ -13,8 +12,6 @@ import (
 )
 
 func GetTodosDueTodayActivity(ctx context.Context) (models.TodosDueTodayResponse, error) {
-	var todosDueToday models.TodosDueTodayResponse
-
 	now := time.Now()
 
 	params := url.Values{}
@@ -27,13 +24,5 @@ func GetTodosDueTodayActivity(ctx context.Context) (models.TodosDueTodayResponse
 	url.RawQuery = params.Encode()
 	urlStr := fmt.Sprintf("%v", url)
 
-	todosDueToday, err := utils.MakeGetReq[models.TodosDueTodayResponse](urlStr)
-	if err != nil {
-		return todosDueToday, err
-	}
-
-	log.GetLog().Info("todosDueToday")
-	log.GetLog().Info(todosDueToday)
-
-	return todosDueToday, nil
+	return utils.MakeGetReq[models.TodosDueTodayResponse](urlStr)
 }

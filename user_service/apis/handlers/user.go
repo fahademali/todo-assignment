@@ -47,7 +47,7 @@ func (uh *UserHandlers) HandleGetProfile(ctx *gin.Context) {
 }
 
 func (uh *UserHandlers) HandleGetUserByIDs(ctx *gin.Context) {
-	var requestBody models.GetUserEmailsByIdsRequest
+	var requestBody models.GetUserByIDsRequest
 
 	if err := ctx.ShouldBindJSON(&requestBody); err != nil {
 		errorResponse := httpResponse.GetErrorResponse(err.Error())
@@ -115,9 +115,7 @@ func (uh *UserHandlers) HandleForgetPassword(ctx *gin.Context) {
 }
 
 func (uh *UserHandlers) HandleSendEmails(ctx *gin.Context) {
-	log.GetLog().Warn("running HandleSendEmails.........")
-
-	var requestBody models.SendEmailsRequestv2
+	var requestBody models.SendEmailsRequest
 
 	if err := ctx.ShouldBindJSON(&requestBody); err != nil {
 		errorResponse := httpResponse.GetErrorResponse(err.Error())

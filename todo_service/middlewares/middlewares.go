@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	httpResponse "todo_service/http"
@@ -27,20 +28,13 @@ func NewTodoMiddlewares(tokenService services.ITokenService) ITodoMiddleware {
 func (tm *TodoMiddleware) Authenticate(ctx *gin.Context) {
 	accessTokenHeader := ctx.Request.Header.Get("Authorization")
 
-	if accessTokenHeader == "" {
-		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse("Authorization Header is missing"))
+	token, err := validateAndExtractToken(accessTokenHeader)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(err.Error()))
 		ctx.Abort()
 		return
 	}
 
-	accessTokenParts := strings.Split(accessTokenHeader, " ")
-	if len(accessTokenParts) != 2 || accessTokenParts[0] != "Bearer" {
-		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse("Invalid or missing token"))
-		ctx.Abort()
-		return
-	}
-
-	token := accessTokenParts[1]
 	user, err := tm.tokenService.GetInfoFromToken(token)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, httpResponse.GetErrorResponse(err.Error()))
@@ -49,4 +43,18 @@ func (tm *TodoMiddleware) Authenticate(ctx *gin.Context) {
 	}
 	ctx.Set("user", user)
 	ctx.Next()
+}
+
+func validateAndExtractToken(tokenHeader string) (string, error) {
+	if tokenHeader == "" {
+		return "", fmt.Errorf("authorization Header is missing")
+	}
+
+	accessTokenParts := strings.Split(tokenHeader, " ")
+
+	if len(accessTokenParts) != 2 || accessTokenParts[0] != "Bearer" {
+		return "", fmt.Errorf("invalid or missing token")
+	}
+
+	return accessTokenParts[1], nil
 }
